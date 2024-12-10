@@ -1,6 +1,5 @@
 import React from 'react'
 import CallToActionSection from '../card/CallToActionSection'
-import FinalHeroSection from '../card/FinalHeroSection'
 import HeroSection from '../card/HeroSection'
 import KeyFeaturesSection from '../card/KeyFeaturesSection'
 import WhyChooseSection from '../card/WhyChooseSection'
@@ -14,7 +13,7 @@ const Home = () => {
       <WhyChooseSection />
       <KeyFeaturesSection />
       <CallToActionSection />
-      <FinalHeroSection />
+      {/* <FinalHeroSection /> */}
     </>
   )
 }

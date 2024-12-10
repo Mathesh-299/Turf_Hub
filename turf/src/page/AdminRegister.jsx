@@ -78,9 +78,9 @@ const AdminRegister = () => {
     };
 
     return (
-        <>
+        <div className="pt-20">
             <Navbar />
-            <div className="min-h-screen flex justify-center items-center bg-gray-300">
+            <div className="min-h-80 flex justify-center items-center bg-gray-300">
                 <div className="flex w-full max-w-7xl bg-blue-50 p-8 rounded-xl shadow-lg">
                     <div
                         className="hidden md:block w-full md:w-1/2 bg-cover bg-center h-screen rounded-xl"
@@ -196,7 +196,7 @@ const AdminRegister = () => {
                     </div>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -6,6 +6,9 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../component/Navbar";
 
+// Import the background image for the registration page
+import registerBgImage from '../assets/img/depositphotos_8307714-stock-photo-cricket-ball.jpg';
+
 const Register = () => {
   const registerFormRef = useRef();
   const navigate = useNavigate();
@@ -59,10 +62,10 @@ const Register = () => {
   };
 
   return (
-    <>
-    <Navbar/>
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-gray-500 to-red-500">
-        <div className="flex flex-col md:flex-row items-center bg-white shadow-xl rounded-lg overflow-hidden md:w-3/4 lg:w-1/2">
+    <div className="pt-8">
+      <Navbar />
+      <div className="min-h-screen flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: `url(${registerBgImage})` }}>
+        <div className="flex flex-col md:flex-row items-center bg-white shadow-xl rounded-lg overflow-hidden md:w-3/4 lg:w-1/2 p-8 bg-opacity-75">
           {/* Right Section with Close Button */}
           <div className="relative w-full md:w-1/2 p-8">
             <button
@@ -186,7 +189,7 @@ const Register = () => {
           pauseOnHover={false}
         />
       </div>
-    </>
+    </div>
   );
 };
 
