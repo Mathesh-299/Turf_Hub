@@ -1,162 +1,158 @@
-import React, { useState } from "react";
-import { FaCalendarAlt, FaCode, FaSignOutAlt, FaTools, FaUserCog } from "react-icons/fa";
-import { NavLink } from "react-router-dom";
+import React from 'react';
+import { FaCalendarAlt, FaClipboardList, FaMoneyBillWave, FaSignOutAlt, FaTachometerAlt, FaUsers } from 'react-icons/fa';
+import { NavLink } from 'react-router-dom';
 
 const AdminPanel = () => {
-    const [selectedModule, setSelectedModule] = useState("dashboard");
-
-    // Dummy Data
-    const bookings = [
-        { id: 1, date: "2024-12-12", session: "Afternoon", user: "John Doe" },
-        { id: 2, date: "2024-12-13", session: "Evening", user: "Jane Smith" },
-    ];
-
-    const users = [
-        { id: 1, name: "John Doe", email: "john@example.com", role: "User" },
-        { id: 2, name: "Admin User", email: "admin@example.com", role: "Admin" },
-    ];
-
-    const handleModuleChange = (module) => {
-        setSelectedModule(module);
-    };
-
     return (
-        <div className="bg-gray-100 min-h-screen flex">
+        <div className="min-h-screen bg-gray-100 flex">
             {/* Sidebar */}
-            <aside className="w-64 bg-gray-800 text-white flex flex-col">
-                <div className="p-6 text-center text-2xl font-bold">
-                    <span className="text-red-500">Turf</span>
-                    <span className="text-yellow-500">hub</span> Admin
+            <div className="flex flex-col w-64 bg-gray-800 text-white h-full fixed">
+                <div className="p-6 text-center border-b border-gray-700">
+                    <h1 className="text-2xl font-bold text-yellow-400">TurfHub Admin</h1>
                 </div>
-                <nav className="flex-grow">
+                <nav className="flex-1 mt-6">
                     <ul>
                         <li>
-                            <button
-                                onClick={() => handleModuleChange("dashboard")}
-                                className={`w-full text-left p-4 flex items-center space-x-3 hover:bg-gray-700 ${selectedModule === "dashboard" ? "bg-gray-700" : ""
-                                    }`}
+                            <NavLink
+                                to="/adminside/dashboard"
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 transition ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'
+                                    }`
+                                }
                             >
-                                <FaUserCog />
-                                <span>Dashboard</span>
-                            </button>
+                                <FaTachometerAlt className="mr-3" />
+                                Dashboard
+                            </NavLink>
                         </li>
                         <li>
-                            <button
-                                onClick={() => handleModuleChange("bookings")}
-                                className={`w-full text-left p-4 flex items-center space-x-3 hover:bg-gray-700 ${selectedModule === "bookings" ? "bg-gray-700" : ""
-                                    }`}
+                            <NavLink
+                                to="/adminside/bookings"
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 transition ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'
+                                    }`
+                                }
                             >
-                                <FaCalendarAlt />
-                                <span>Manage Bookings</span>
-                            </button>
+                                <FaCalendarAlt className="mr-3" />
+                                Bookings
+                            </NavLink>
                         </li>
                         <li>
-                            <button
-                                onClick={() => handleModuleChange("users")}
-                                className={`w-full text-left p-4 flex items-center space-x-3 hover:bg-gray-700 ${selectedModule === "users" ? "bg-gray-700" : ""
-                                    }`}
+                            <NavLink
+                                to="/adminside/users"
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 transition ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'
+                                    }`
+                                }
                             >
-                                <FaTools />
-                                <span>Manage Users</span>
-                            </button>
+                                <FaUsers className="mr-3" />
+                                Users
+                            </NavLink>
                         </li>
                         <li>
-                            <button
-                                onClick={() => handleModuleChange("codeHelp")}
-                                className={`w-full text-left p-4 flex items-center space-x-3 hover:bg-gray-700 ${selectedModule === "codeHelp" ? "bg-gray-700" : ""
-                                    }`}
+                            <NavLink
+                                to="/adminside/payments"
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 transition ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'
+                                    }`
+                                }
                             >
-                                <FaCode />
-                                <span>Code Help</span>
-                            </button>
+                                <FaMoneyBillWave className="mr-3" />
+                                Payments
+                            </NavLink>
+                        </li>
+                        <li>
+                            <NavLink
+                                to="/adminside/manage"
+                                className={({ isActive }) =>
+                                    `flex items-center px-4 py-3 transition ${isActive ? 'bg-gray-700' : 'hover:bg-gray-700'
+                                    }`
+                                }
+                            >
+                                <FaClipboardList className="mr-3" />
+                                Manage Turf
+                            </NavLink>
                         </li>
                     </ul>
                 </nav>
-                <div className="p-4 border-t border-gray-600">
+                {/* Logout Button */}
+                <div className="mt-auto p-4">
                     <NavLink
-                        to="/"
-                        className="w-full text-left flex items-center space-x-3 text-red-500 hover:text-yellow-500"
+                        to="/login"
+                        className="flex items-center justify-center px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition"
                     >
-                        <FaSignOutAlt />
-                        <span>Logout</span>
+                        <FaSignOutAlt className="mr-3" />
+                        Logout
                     </NavLink>
                 </div>
-            </aside>
+            </div>
 
             {/* Main Content */}
-            <main className="flex-grow p-6">
-                {selectedModule === "dashboard" && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-4">Admin Dashboard</h2>
-                        <p>Welcome, Admin! Use the menu to navigate between modules.</p>
-                    </div>
-                )}
+            <div className="ml-64 p-8">
+                <div className="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</div>
 
-                {selectedModule === "bookings" && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-4">Manage Bookings</h2>
-                        <table className="w-full bg-white shadow-lg rounded-lg">
-                            <thead>
-                                <tr className="bg-gray-800 text-white">
-                                    <th className="p-4">ID</th>
-                                    <th className="p-4">Date</th>
-                                    <th className="p-4">Session</th>
-                                    <th className="p-4">User</th>
+                {/* Cards Section */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+                        <h3 className="text-lg font-semibold text-gray-700">Total Bookings</h3>
+                        <p className="text-3xl font-bold text-yellow-500 mt-3">120</p>
+                    </div>
+                    <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+                        <h3 className="text-lg font-semibold text-gray-700">Active Users</h3>
+                        <p className="text-3xl font-bold text-green-500 mt-3">45</p>
+                    </div>
+                    <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+                        <h3 className="text-lg font-semibold text-gray-700">Monthly Revenue</h3>
+                        <p className="text-3xl font-bold text-blue-500 mt-3">₹50,000</p>
+                    </div>
+                    <div className="bg-white shadow-lg rounded-lg p-6 text-center">
+                        <h3 className="text-lg font-semibold text-gray-700">Pending Payments</h3>
+                        <p className="text-3xl font-bold text-red-500 mt-3">5</p>
+                    </div>
+                </div>
+
+                {/* Table Section */}
+                <div className="mt-10 bg-white shadow-lg rounded-lg">
+                    <div className="p-6 border-b border-gray-200">
+                        <h3 className="text-xl font-semibold text-gray-700">Recent Bookings</h3>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="table-auto w-full border-collapse">
+                            <thead className="bg-gray-200">
+                                <tr>
+                                    <th className="px-4 py-2 text-gray-600 font-medium text-left">Booking ID</th>
+                                    <th className="px-4 py-2 text-gray-600 font-medium text-left">User</th>
+                                    <th className="px-4 py-2 text-gray-600 font-medium text-left">Date</th>
+                                    <th className="px-4 py-2 text-gray-600 font-medium text-left">Time</th>
+                                    <th className="px-4 py-2 text-gray-600 font-medium text-left">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {bookings.map((booking) => (
-                                    <tr key={booking.id} className="border-t">
-                                        <td className="p-4">{booking.id}</td>
-                                        <td className="p-4">{booking.date}</td>
-                                        <td className="p-4">{booking.session}</td>
-                                        <td className="p-4">{booking.user}</td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {selectedModule === "users" && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-4">Manage Users</h2>
-                        <table className="w-full bg-white shadow-lg rounded-lg">
-                            <thead>
-                                <tr className="bg-gray-800 text-white">
-                                    <th className="p-4">ID</th>
-                                    <th className="p-4">Name</th>
-                                    <th className="p-4">Email</th>
-                                    <th className="p-4">Role</th>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">B001</td>
+                                    <td className="px-4 py-2">John Doe</td>
+                                    <td className="px-4 py-2">2024-12-12</td>
+                                    <td className="px-4 py-2">Evening</td>
+                                    <td className="px-4 py-2 text-green-600 font-semibold">Confirmed</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.id} className="border-t">
-                                        <td className="p-4">{user.id}</td>
-                                        <td className="p-4">{user.name}</td>
-                                        <td className="p-4">{user.email}</td>
-                                        <td className="p-4">{user.role}</td>
-                                    </tr>
-                                ))}
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">B002</td>
+                                    <td className="px-4 py-2">Jane Smith</td>
+                                    <td className="px-4 py-2">2024-12-13</td>
+                                    <td className="px-4 py-2">Afternoon</td>
+                                    <td className="px-4 py-2 text-yellow-600 font-semibold">Pending</td>
+                                </tr>
+                                <tr className="hover:bg-gray-50">
+                                    <td className="px-4 py-2">B003</td>
+                                    <td className="px-4 py-2">Alex Brown</td>
+                                    <td className="px-4 py-2">2024-12-14</td>
+                                    <td className="px-4 py-2">Night</td>
+                                    <td className="px-4 py-2 text-red-600 font-semibold">Cancelled</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
-                )}
-
-                {selectedModule === "codeHelp" && (
-                    <div>
-                        <h2 className="text-2xl font-bold mb-4">Code Help</h2>
-                        <p>Find code snippets and guidelines for each module below:</p>
-                        <ul className="list-disc pl-6 mt-4">
-                            <li>Frontend Code for Booking</li>
-                            <li>Backend Code for User Management</li>
-                            <li>API Documentation</li>
-                            <li>Error Handling Tips</li>
-                        </ul>
-                    </div>
-                )}
-            </main>
+                </div>
+            </div>
         </div>
     );
 };

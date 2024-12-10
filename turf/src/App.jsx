@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Navbar from "./component/Navbar";
 import AdminPanel from "./content/AdminPanel";
 import About from "./page/About";
 import AdminLogin from "./page/AdminLogin";
@@ -17,15 +16,6 @@ import Register from "./page/Register";
 import UserLogin from "./page/userlogin";
 import Sports from "./sports/Sports";
 
-// Protected Route Component
-// const ProtectedRoute = ({ children }) => {
-//     const user = localStorage.getItem('adminToken');
-//     if (!user) {
-//         // Redirect to login if the user is not logged in
-//         return <Navigate to="/login" />;
-//     }
-//     return children;
-// };
 
 const App = () => {
     const [user, setUser] = useState(null);
@@ -43,17 +33,17 @@ const App = () => {
         setUser(true); // Set user state to logged in
     };
 
-    const handleLogout = () => {
-        // Clear the user data (e.g., token) from localStorage
-        localStorage.removeItem('adminToken');
-        setUser(null); // Update the state to reflect that the user is logged out
-    };
+    // const handleLogout = () => {
+    //     // Clear the user data (e.g., token) from localStorage
+    //     localStorage.removeItem('adminToken');
+    //     setUser(null); // Update the state to reflect that the user is logged out
+    // };
 
     return (
         <div>
             <Router>
-                <Navbar user={user} onLogout={handleLogout} />
-                <div className="pt-16">
+                {/* <Navbar user={user} onLogout={handleLogout} /> */}
+                <div >
                     <ToastContainer position="top-right" autoClose={3000} />
                     <Routes>
                         {/* Public Routes */}
