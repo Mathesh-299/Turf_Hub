@@ -3,15 +3,15 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const db = require("./db"); // Ensure the file exists in the correct path
+const { Server } = require("socket.io");
+const http = require("http");
+const db = require("./db"); // Ensure the file connects to MongoDB
 const userRoutes = require("./routes/users");
 const authRoutes = require("./routes/auth");
-const adminRoutes = require("./routes/admin");
-const socketIo = require("socket.io"); // Import Socket.io
-
-// Import the Booking model
+const adminRoutes = require("./routes/Admin");
 const Booking = require("./models/bookingschema");
 
+// Initialize Express App
 const app = express();
 const port = process.env.PORT || 8000;
 
@@ -21,42 +21,53 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Database connection
-db();
+db(); // Ensure this function connects to MongoDB
 
-// Create server and listen for connections
-const server = app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+// Create HTTP server and attach Socket.IO
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "*", // Adjust this for your production environment
+    methods: ["GET", "POST"],
+  },
 });
 
-// Set up Socket.io for real-time communication
-const io = socketIo(server, {
-  cors: {
-    origin: "http://localhost:8000",  // Allow connection from frontend's URL
-    methods: ["GET", "POST"],
-  }
+// Listen for Socket.IO connections
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
 });
 
 // Routes
-app.use("/api/users", userRoutes);
+app.use("/api/users", userRoutes); // User-related routes
 app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes); // Admin routes
+app.use("/api/admin", adminRoutes);
 
-app.get('/api/ground/available', async (req, res) => {
+// API to fetch available ground bookings
+app.get("/api/ground/available", async (req, res) => {
   try {
     const bookings = await Booking.find();
     res.json(bookings);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch bookings' });
+    res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
 
-// API to handle bookings
-app.post('/api/ground/book', async (req, res) => {
+// API to handle ground bookings
+app.post("/api/ground/book", async (req, res) => {
   const { date, session } = req.body;
 
-  console.log('Received booking request:', req.body);  // Log the incoming data
+  console.log("Received booking request:", req.body); // Log the incoming data
 
   try {
+    // Validate the request body
+    if (!date || !session) {
+      return res.status(400).json({ error: "Date and session are required." });
+    }
+
     // Check if the booking for the specified date already exists
     let booking = await Booking.findOne({ date });
 
@@ -73,9 +84,17 @@ app.post('/api/ground/book', async (req, res) => {
     booking[session] = true;
     await booking.save();
 
+    // Emit real-time update
+    io.emit("new-booking", { date, session });
+
     res.json({ message: `${session} slot booked successfully.` });
   } catch (error) {
-    console.error('Error during booking:', error);  // Log the error
-    res.status(500).json({ error: 'Failed to book session' });
+    console.error("Error during booking:", error); // Log the error
+    res.status(500).json({ error: "Failed to book session" });
   }
+});
+
+// Start server
+server.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
 });
