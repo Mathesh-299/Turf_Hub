@@ -1,31 +1,49 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom'; // Import NavLink for routing
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import Tennis from '../assets/img/depositphotos_8307714-stock-photo-cricket-ball.jpg';
+import Current from '../assets/img/img.jpg';
+import Cric from '../assets/img/photo-1721760886713-1ab0c5045bf7.jpeg';
+import Foot from '../assets/img/premium_photo-1666913667082-c1fecc45275d.jpeg';
 import Navbar from '../component/Navbar';
-
 const GroundComponent = () => {
-    const grounds = [
+    const [grounds] = useState([
         {
-            name: 'Turf A',
-            price: '₹300/hr',
-            contact: '123-456-7890',
-            location: 'Location A, City X',
-            imageUrl: 'https://via.placeholder.com/400x250', // Add image URLs
-        },
-        {
-            name: 'Turf B',
-            price: '₹400/hr',
+            id: 1,
+            name: 'Chennai Turf Arena',
+            price: '₹500/hr',
             contact: '987-654-3210',
-            location: 'Location B, City Y',
-            imageUrl: 'https://via.placeholder.com/400x250',
+            location: 'Chennai, Tamil Nadu',
+            availability: 'Open: 6 AM - 10 PM',
+            imageUrl: Cric,
         },
         {
-            name: 'Turf C',
-            price: '₹350/hr',
-            contact: '555-123-4567',
-            location: 'Location C, City Z',
-            imageUrl: 'https://via.placeholder.com/400x250',
+            id: 2,
+            name: 'Coimbatore Sports Hub',
+            price: '₹400/hr',
+            contact: '876-543-2109',
+            location: 'Coimbatore, Tamil Nadu',
+            availability: 'Open: 7 AM - 9 PM',
+            imageUrl: Tennis,
         },
-    ];
+        {
+            id: 3,
+            name: 'Madurai Play Ground',
+            price: '₹450/hr',
+            contact: '765-432-1098',
+            location: 'Madurai, Tamil Nadu',
+            availability: 'Open: 8 AM - 11 PM',
+            imageUrl:Foot,
+        },
+        {
+            id: 4,
+            name: 'Trichy Sports Complex',
+            price: '₹350/hr',
+            contact: '654-321-0987',
+            location: 'Tiruchirappalli, Tamil Nadu',
+            availability: 'Open: 6 AM - 8 PM',
+            imageUrl:Current,
+        },
+    ]);
 
     return (
         <div className="pt-20">
@@ -33,13 +51,12 @@ const GroundComponent = () => {
             <div className="p-4 max-w-6xl mx-auto space-y-6">
                 <h1 className="text-center text-3xl font-bold mb-6">Available Grounds</h1>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {grounds.map((ground, index) => (
+                    {grounds.map((ground) => (
                         <div
-                            key={index}
+                            key={ground.id}
                             className="border border-gray-300 rounded-lg p-4 bg-white shadow-lg hover:shadow-xl transition-shadow duration-300"
                         >
                             <div className="mb-4">
-                                {/* Display Image for each ground */}
                                 <img
                                     src={ground.imageUrl}
                                     alt={ground.name}
@@ -53,13 +70,14 @@ const GroundComponent = () => {
                             <div className="text-center mb-2">
                                 <span className="font-medium">Contact:</span> {ground.contact}
                             </div>
-                            <div className="text-center mb-4">
+                            <div className="text-center mb-2">
                                 <span className="font-medium">Location:</span> {ground.location}
                             </div>
-
-                            {/* Replace button with NavLink for navigation */}
+                            <div className="text-center mb-4">
+                                <span className="font-medium">Availability:</span> {ground.availability}
+                            </div>
                             <NavLink
-                                to={'/ground'} // Update the path based on your routing
+                                to={"/ground"}
                                 className="w-full bg-blue-500 text-white p-2 rounded-lg text-center hover:bg-blue-600"
                             >
                                 Book Now

@@ -1,7 +1,8 @@
+import axios from 'axios';
 import React, { useRef, useState } from 'react';
 import { FaEnvelope, FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 import { NavLink, useNavigate } from 'react-router-dom'; // Import NavLink for navigation
-import { toast, ToastContainer } from "react-toastify";
+import { ToastContainer, toast } from "react-toastify"; // Import toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from '../component/Navbar';
 
@@ -27,20 +28,19 @@ const Login = () => {
     try {
       const url = "http://localhost:8000/api/auth";
       const { data: res } = await axios.post(url, data);
-      if (!res.data.address) {  // Check if address is missing
-        toast.error("You need to register first. Redirecting to Register page.");
-        navigate('/register');  // Redirect to Register page
-        return;
-      }
-      localStorage.setItem("token", res.data);
+      console.log("Login Successfully");
+
+      // Show success toast notification
       toast.success("Login Successful! Welcome back.");
-      navigate('/');
+
+      // Store token and navigate after a delay
+      localStorage.setItem("token", res.data);
+      setTimeout(() => {
+        navigate("/");  // Redirect to the default page after 3-4 seconds
+      }, 3000);  // 3-second delay
     } catch (error) {
       if (error.response && error.response.status >= 400 && error.response.status <= 500) {
         setError(error.response.data.message);
-        toast.error(error.response.data.message);
-      } else {
-        toast.error("An unexpected error occurred");
       }
     }
   };
@@ -53,7 +53,7 @@ const Login = () => {
     <div className='pt-8'>
       <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-black/20">
-        <div className="flex flex-col-reverse md:flex-row items-center bg-gradient-to-l from-blue-500 to-black/30  shadow-xl rounded-lg overflow-hidden md:w-3/4 lg:w-1/2">
+        <div className="flex flex-col-reverse md:flex-row items-center bg-gradient-to-l from-blue-500 to-black/30 shadow-xl rounded-lg overflow-hidden md:w-3/4 lg:w-1/2">
           {/* Left Section - Sports Image */}
           <div className="w-full h-full md:w-1/2 p-8">
             <img src={loginImage} alt="Sports Illustration" className="w-full h-full object-cover rounded-lg shadow-md" />
@@ -135,7 +135,7 @@ const Login = () => {
                 to="/register"  // Link to Register page
                 className="text-lg text-black "
               >
-                Don't have an account? 
+                Don't have an account?
                 <span className='p-2 text-white font-bold hover:underline'>
                   Register here.
                 </span>

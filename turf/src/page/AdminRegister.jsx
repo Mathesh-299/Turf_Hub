@@ -1,31 +1,30 @@
 import axios from "axios";
 import React, { useState } from "react";
-import toast from "react-hot-toast"; // For Toaster notifications
-import { FaEye, FaEyeSlash, FaLock, FaRegCheckCircle, FaUserAlt } from "react-icons/fa"; // Icons for input fields
+import toast from "react-hot-toast";
+import { FaEnvelope, FaEye, FaEyeSlash, FaLock, FaUserAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import adminImage from '../assets/img/Bg.jpg';
 import Navbar from "../component/Navbar";
 
 const AdminRegister = () => {
     const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");  // Declare email state
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [errorMessage, setErrorMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [passwordVisible, setPasswordVisible] = useState(false);
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-    const [usernameExists, setUsernameExists] = useState(false); // To check username existence
+    const [usernameExists, setUsernameExists] = useState(false);
     const navigate = useNavigate();
 
-    // Password strength check
     const checkPasswordStrength = (password) => {
         const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
         return regex.test(password);
     };
 
-    // Form validation
     const validateForm = () => {
-        if (!username || !password || !confirmPassword) {
+        if (!username || !password || !confirmPassword || !email) {
             setErrorMessage("All fields are required");
             return false;
         }
@@ -44,19 +43,19 @@ const AdminRegister = () => {
         return true;
     };
 
-    const handleUsernameChange = async (e) => {
-        setUsername(e.target.value);
+    const handleUsernameBlur = async () => {
         try {
-            const response = await axios.post("http://localhost:8000/api/admin/check-username", { username: e.target.value });
+            const response = await axios.post("http://localhost:8000/api/admin/check-username", { username });
             setUsernameExists(response.data.exists);
         } catch (err) {
-            setUsernameExists(false); // Reset on error
+            console.error("Error checking username:", err);
+            setUsernameExists(false);
         }
     };
 
     const handleRegister = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return;
+        if (!validateForm()) return; // Ensure form validation
 
         setLoading(true);
         setErrorMessage("");
@@ -64,14 +63,18 @@ const AdminRegister = () => {
         try {
             const response = await axios.post("http://localhost:8000/api/admin/register", {
                 username,
+                email,  // Ensure you're sending email as well
                 password,
+                confirmPassword,  // Ensure this is sent
             });
-            toast.success(response.data.message); // Show success toast
+            toast.success(response.data.message);
             setUsername("");
+            setEmail("");  // Clear the email field
             setPassword("");
             setConfirmPassword("");
         } catch (err) {
-            toast.error(err.response?.data?.message || "Registration failed"); // Show error toast
+            // Capture backend error message
+            toast.error(err.response?.data?.message || "Registration failed");
         } finally {
             setLoading(false);
         }
@@ -84,24 +87,18 @@ const AdminRegister = () => {
                 <div className="flex w-full max-w-7xl bg-blue-50 p-8 rounded-xl shadow-lg">
                     <div
                         className="hidden md:block w-full md:w-1/2 bg-cover bg-center h-screen rounded-xl"
-                        style={{ backgroundImage: `url(${adminImage})`, backgroundPosition: 'center', backgroundSize: 'cover' }}
+                        style={{ backgroundImage: `url(${adminImage})` }}
                     >
                         <div className="w-full h-full bg-black bg-opacity-40 p-8 rounded-xl space-y-6">
                             <h2 className="text-4xl font-extrabold text-white mb-4">Welcome to TurfHub Admin</h2>
-                            <p className="text-lg text-white mb-4">
-                                Manage TurfHub services, bookings, and user access efficiently. As an admin, you can ensure smooth operations and user satisfaction.
-                            </p>
                             <p className="text-lg text-white mb-6">
-                                Register now to get access to all admin features and start managing your TurfHub platform.
+                                Register now to access all admin features and manage your TurfHub platform.
                             </p>
                         </div>
                     </div>
-
-                    {/* Right side - Registration Form */}
                     <div className="w-full md:w-1/2 space-y-6 bg-white p-8 rounded-xl shadow-lg">
                         <h1 className="text-4xl font-semibold text-center text-gray-700 mb-6">Admin Registration</h1>
                         <form onSubmit={handleRegister} className="space-y-6">
-                            {/* Username Input */}
                             <div className="relative">
                                 <label htmlFor="username" className="block text-gray-600 font-medium">Username</label>
                                 <div className="flex items-center border-2 border-gray-300 rounded-md mt-2">
@@ -110,7 +107,8 @@ const AdminRegister = () => {
                                         type="text"
                                         id="username"
                                         value={username}
-                                        onChange={handleUsernameChange}
+                                        onChange={(e) => setUsername(e.target.value)}
+                                        onBlur={handleUsernameBlur}
                                         placeholder="Enter username"
                                         className="w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                                     />
@@ -120,7 +118,21 @@ const AdminRegister = () => {
                                 )}
                             </div>
 
-                            {/* Password Input */}
+                            <div className="relative">
+                                <label htmlFor="email" className="block text-gray-600 font-medium">Email</label>
+                                <div className="flex items-center border-2 border-gray-300 rounded-md mt-2">
+                                    <FaEnvelope className="text-gray-400 ml-3" />
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        value={email}  // Use email state variable
+                                        onChange={(e) => setEmail(e.target.value)}  // Update email state on change
+                                        placeholder="Enter email"
+                                        className="w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="relative">
                                 <label htmlFor="password" className="block text-gray-600 font-medium">Password</label>
                                 <div className="flex items-center border-2 border-gray-300 rounded-md mt-2">
@@ -142,17 +154,16 @@ const AdminRegister = () => {
                                 </div>
                             </div>
 
-                            {/* Confirm Password Input */}
                             <div className="relative">
                                 <label htmlFor="confirmPassword" className="block text-gray-600 font-medium">Confirm Password</label>
                                 <div className="flex items-center border-2 border-gray-300 rounded-md mt-2">
-                                    <FaRegCheckCircle className="text-gray-400 ml-3" />
+                                    <FaLock className="text-gray-400 ml-3" />
                                     <input
                                         type={confirmPasswordVisible ? "text" : "password"}
                                         id="confirmPassword"
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
-                                        placeholder="Confirm your password"
+                                        placeholder="Confirm password"
                                         className="w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
                                     />
                                     <span
@@ -164,35 +175,17 @@ const AdminRegister = () => {
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                className={`w-[50%] p-3 mt-4 text-white font-semibold rounded-md ${loading ? "bg-gray-400" : "bg-blue-600 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300"} transition-all`}
-                                disabled={loading}
-                            >
-                                {loading ? "Registering..." : "Register"}
-                            </button>
-                        </form>
-
-                        {/* Error or Success Message */}
-                        {errorMessage && (
-                            <div className="mt-4 text-red-500 text-center">
-                                <p>{errorMessage}</p>
-                            </div>
-                        )}
-
-                        {/* Link to Login Page */}
-                        <div className="text-center mt-6">
-                            <p className="text-gray-600">
-                                Already have an account?{" "}
-                                <span
-                                    className="text-blue-600 cursor-pointer hover:underline"
-                                    onClick={() => navigate("/adminlogin")}
+                            {errorMessage && <p className="text-sm text-red-500">{errorMessage}</p>}
+                            <div className="flex justify-center">
+                                <button
+                                    type="submit"
+                                    className={`w-full bg-blue-600 text-white p-3 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+                                    disabled={loading}
                                 >
-                                    Login here
-                                </span>
-                            </p>
-                        </div>
+                                    {loading ? "Registering..." : "Register"}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

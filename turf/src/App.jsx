@@ -2,6 +2,11 @@ import React, { useEffect, useState } from "react";
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Admindash from "./adminside/Admindash";
+import BookingDetailsPage from "./adminside/BookingDetailsPage";
+import Managesing from "./adminside/Managesing";
+import Paymentdetailspage from "./adminside/Paymentdetailspage";
+import User from "./adminside/Uers";
 import AdminPanel from "./content/AdminPanel";
 import About from "./page/About";
 import AdminLogin from "./page/AdminLogin";
@@ -57,9 +62,16 @@ const App = () => {
                         <Route path="/adminlogin" element={<AdminLogin onLogin={handleLogin} />} />
                         <Route path="/adminregister" element={<AdminRegister />} />
                         <Route path="/groundpage" element={<Groundpage />} />
-                        <Route path="/adminside" element={<AdminPanel />} />
+
                         <Route path="/main" element={<Main />} />
-                        <Route path="/ground"element={<GroundBooking />}/>
+                        <Route path="/ground" element={<GroundBooking />} />
+                        <Route path="/adminside" element={<AdminPanel />} >
+                            <Route index element={<Admindash />} />
+                            <Route path="users" element={<User />} />
+                            <Route path="manage" element={<Managesing />} />
+                            <Route path="payments" element={<Paymentdetailspage />} />
+                            <Route path="bookings" element={<BookingDetailsPage />} />
+                        </Route>
                     </Routes>
                 </div>
                 {/* Other components */}
