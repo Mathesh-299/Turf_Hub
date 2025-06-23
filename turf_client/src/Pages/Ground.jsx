@@ -1,32 +1,12 @@
 import { useState } from "react";
-import { FaClock, FaEdit, FaMapMarkerAlt, FaPlus, FaRupeeSign, FaTrash } from "react-icons/fa";
-
-const initialTurfs = [
-    {
-        id: 1,
-        name: "Chennai Sports Arena",
-        location: "Chennai",
-        price: 1500,
-        slots: ["Morning", "Afternoon", "Evening", "Night"],
-        image: "",
-    },
-    {
-        id: 2,
-        name: "Coimbatore Turf Hub",
-        location: "Coimbatore",
-        price: 1200,
-        slots: ["Morning", "Afternoon", "Evening", "Night"],
-        image: "",
-    },
-    {
-        id: 3,
-        name: "Madurai Turf Center",
-        location: "Madurai",
-        price: 1000,
-        slots: ["Morning", "Afternoon", "Evening", "Night"],
-        image: "",
-    },
-];
+import {
+    FaClock,
+    FaEdit,
+    FaMapMarkerAlt,
+    FaPlus,
+    FaRupeeSign,
+    FaTrash,
+} from "react-icons/fa";
 
 const districts = [
     "Chennai", "Coimbatore", "Cuddalore", "Dindigul", "Erode",
@@ -36,7 +16,7 @@ const districts = [
 ];
 
 const Ground = () => {
-    const [turfs, setTurfs] = useState(initialTurfs);
+    const [turfs, setTurfs] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState("All");
     const [showForm, setShowForm] = useState(false);
     const [editId, setEditId] = useState(null);
@@ -64,20 +44,32 @@ const Ground = () => {
         setShowForm(true);
     };
 
+    const closeForm = () => {
+        setShowForm(false);
+        setEditId(null);
+        setFormData({ name: "", location: "", price: "", slots: [], image: "" });
+    };
+
+    const addNewTurf = () => {
+        const newTurf = { ...formData, id: Date.now() };
+        setTurfs((prev) => [...prev, newTurf]);
+        closeForm();
+    };
+
+    const updateTurf = () => {
+        setTurfs((prev) =>
+            prev.map((t) => (t.id === editId ? { ...formData, id: editId } : t))
+        );
+        closeForm();
+    };
+
     const handleFormSubmit = (e) => {
         e.preventDefault();
         if (editId) {
-            setTurfs((prev) =>
-                prev.map((t) => (t.id === editId ? { ...formData, id: editId } : t))
-            );
+            updateTurf();
         } else {
-            const newTurf = {
-                ...formData,
-                id: Date.now(),
-            };
-            setTurfs((prev) => [...prev, newTurf]);
+            addNewTurf();
         }
-        setShowForm(false);
     };
 
     const handleDelete = (id) => {
@@ -186,7 +178,7 @@ const Ground = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                     <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md relative">
                         <button
-                            onClick={() => setShowForm(false)}
+                            onClick={closeForm}
                             className="absolute top-2 right-3 text-red-500 hover:text-red-700 text-xl"
                         >
                             &times;

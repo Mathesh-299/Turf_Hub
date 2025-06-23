@@ -1,20 +1,42 @@
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import API from "../api/api";
 
 const Login = () => {
     const [form, setForm] = useState({ email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [Submit, setSubmit] = useState(false);
-    const handleSubmit = (e) => {
+    const navigate = useNavigate();
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (form.email.trim().length === 0 || form.password.trim().length === 0) {
             alert("Fill all the fields");
             setSubmit(false);
             return;
         }
-        setSubmit(true);
-        alert(`Logging in as ${form.email}`);
+        try {
+            const response = await API.post('/users/login', form);
+            if (response?.status === 200 || response?.status === 201) {
+                // console.log("loggin successful")
+                toast.success("Successfully loggedIn");
+                setForm({ email: "", password: "" });
+                localStorage.setItem("token", response.data.token);
+                localStorage.setItem("isLoggedIn","true");
+                localStorage.setItem("user", JSON.stringify(response.data.user));
+                console.log(user);
+                setTimeout(() => {
+                    navigate("/", { replace: true });
+                    window.location.reload();
+                }, 2000)
+            }
+            const { token, user } = response.data;
+            console.log(token);
+            console.log(user)
+        } catch (error) {
+            console.log(error)
+        }
     };
 
     return (
@@ -33,7 +55,6 @@ const Login = () => {
                                 type="email"
                                 id="email"
                                 placeholder="Email"
-                                // required
                                 className="w-full pl-10 pr-4 py-3 border rounded-lg shadow-sm text-blue-800 border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
                                 value={form.email}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}

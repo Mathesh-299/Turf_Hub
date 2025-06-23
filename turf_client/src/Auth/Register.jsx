@@ -1,6 +1,8 @@
-import { Lock, Mail, Phone, User } from "lucide-react";
+import { LoaderCircleIcon, Lock, Mail, Phone, User } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import API from "../api/api";
 
 const Register = () => {
     const [form, setForm] = useState({
@@ -9,10 +11,38 @@ const Register = () => {
         phone: "",
         password: "",
     });
+    const navigate = useNavigate();
+    const [buttonSubmit, SetButtonSubmit] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert(`Registered as ${form.name}`);
+
+        if (
+            form.email.trim().length === 0 ||
+            form.name.trim().length === 0 ||
+            form.phone.trim().length === 0 ||
+            form.password.trim().length === 0
+        ) {
+            toast.error("Please fill all fields");
+            return;
+        }
+
+        SetButtonSubmit(true);
+        try {
+            const response = await API.post("/users/register", form);
+            if (response.status === 201) {
+                toast.success(`Registered as ${form.name}`);
+                setForm({ name: "", email: "", phone: "", password: "" });
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000)
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error(error.response?.data?.message || "Registration failed");
+        } finally {
+            SetButtonSubmit(false);
+        }
     };
 
     return (
@@ -28,7 +58,6 @@ const Register = () => {
                         <input
                             type="text"
                             placeholder="Full Name"
-                            required
                             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-green-900 border border-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
@@ -40,7 +69,6 @@ const Register = () => {
                         <input
                             type="email"
                             placeholder="Email Address"
-                            required
                             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-green-900 border border-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -52,7 +80,6 @@ const Register = () => {
                         <input
                             type="tel"
                             placeholder="Phone Number"
-                            required
                             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-green-900 border border-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                             value={form.phone}
                             onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -64,7 +91,6 @@ const Register = () => {
                         <input
                             type="password"
                             placeholder="Password"
-                            required
                             className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/80 text-green-900 border border-green-200 focus:outline-none focus:ring-2 focus:ring-green-500"
                             value={form.password}
                             onChange={(e) => setForm({ ...form, password: e.target.value })}
@@ -73,9 +99,17 @@ const Register = () => {
 
                     <button
                         type="submit"
-                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-xl shadow"
+                        className="w-full py-3 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-xl shadow flex items-center justify-center gap-2"
+                        disabled={buttonSubmit}
                     >
-                        Register
+                        {buttonSubmit ? (
+                            <>
+                                <LoaderCircleIcon className="animate-spin" />
+                                <span>Registering...</span>
+                            </>
+                        ) : (
+                            <span>Register</span>
+                        )}
                     </button>
                 </form>
 

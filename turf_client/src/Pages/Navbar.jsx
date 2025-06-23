@@ -1,21 +1,29 @@
-import { Menu, User2Icon, X } from 'lucide-react';
+import { LogOut, Menu, User2Icon, X } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
-
-    const routes = ['/', '/about',  '/ground'];
+    const routes = ['/', '/about', '/ground'];
     const pages = ['Home', 'About', 'Turf Ground'];
-    const isLoggedIn = false;
-    const role = 'user';
+    const navigate = useNavigate();
+    const user = JSON.parse(localStorage.getItem("user"));
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const token = localStorage.getItem("token");
 
+    const handleLogout = () => {
+        localStorage.setItem("isLoggedIn", "false");
+        localStorage.removeItem("token");
+        localStorage.removeItem("user")
+        navigate("/");
+        window.location.reload();
+    }
     return (
         <div className="w-full bg-gradient-to-r from-black via-gray-900 to-black fixed top-0 shadow-xl z-50">
             <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-6">
-                {isLoggedIn && role === 'admin' ? (
-                    <Link to="/" className="text-3xl font-extrabold text-transparent bg-clip-text bg-blue-500 border-b-2 border-l-2 border-gray-50 border-r-2 px-2 py-1.5 rounded-lg">
+                {isLoggedIn && user && user.role === 'admin' ? (
+                    <Link to="/adminPage" className="text-3xl font-extrabold text-transparent bg-clip-text bg-blue-500 border-b-2 border-l-2 border-gray-50 border-r-2 px-2 py-1.5 rounded-lg">
                         Turf Hub
                     </Link>
                 ) : (
@@ -37,11 +45,20 @@ const Navbar = () => {
                             </button>
                         </Link>
                     ))}
+                    {(isLoggedIn && token && token.length > 0) ? (
+                        <button onClick={handleLogout} className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-red-700/30 text-red-300 border border-red-400 hover:bg-red-800/50 transition">
+                            <LogOut />
+                            <span>
+                                Logout
+                            </span>
+                        </button>
+                    ) :
 
-                    <Link to="/login" className="flex items-center gap-2 hover:text-blue-300 transition">
-                        <User2Icon />
-                        <span>Login</span>
-                    </Link>
+                        (<Link to="/login" className="flex items-center gap-2 hover:text-blue-300 transition">
+                            <User2Icon />
+                            <span>Login</span>
+                        </Link>
+                        )}
                 </div>
 
                 <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-white">
@@ -70,19 +87,28 @@ const Navbar = () => {
                                 </div>
                             </Link>
                         ))}
-
-                        <Link
-                            to="/login"
-                            onClick={() => setMenuOpen(false)}
-                            className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-blue-700/30 text-blue-300 border border-blue-400 hover:bg-blue-800/50 transition"
-                        >
-                            <User2Icon />
-                            <span>Login</span>
-                        </Link>
+                        {(isLoggedIn && token && token.length > 0) ? (
+                            <button onClick={handleLogout} className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-red-700/30 text-red-300 border border-red-400 hover:bg-red-800/50 transition">
+                                <LogOut />
+                                <span>
+                                    Logout
+                                </span>
+                            </button>
+                        ) :
+                            (< Link
+                                to="/login"
+                                onClick={() => setMenuOpen(false)}
+                                className="flex items-center justify-center gap-2 py-2 px-4 rounded-md bg-blue-700/30 text-blue-300 border border-blue-400 hover:bg-blue-800/50 transition"
+                            >
+                                <User2Icon />
+                                <span>Login</span>
+                            </Link>
+                            )}
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 };
 
