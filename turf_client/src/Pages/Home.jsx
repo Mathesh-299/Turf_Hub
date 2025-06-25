@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 
 const Home = () => {
     return (
-        <div className="min-h-screen pt-20 bg-gradient-to-b from-gray-100 to-white text-gray-800">
+        <div className="min-h-screen pt-20 bg-gradient-to-b from-gray-600 to-white/50 text-gray-800">
             <div className="max-w-7xl mx-auto px-6 py-12">
 
                 <motion.div

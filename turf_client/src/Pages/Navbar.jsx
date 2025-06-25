@@ -1,6 +1,7 @@
 import { LogOut, Menu, User2Icon, X } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const Navbar = () => {
     const location = useLocation();
@@ -8,20 +9,23 @@ const Navbar = () => {
     const routes = ['/', '/about', '/ground'];
     const pages = ['Home', 'About', 'Turf Ground'];
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem("user"));
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const token = localStorage.getItem("token");
+    const user = useMemo(() => JSON.parse(localStorage.getItem("user")));
+    const isLoggedIn = useMemo(() => localStorage.getItem("isLoggedIn") === "true");
+    const token = useMemo(() => localStorage.getItem("token"));
 
     const handleLogout = () => {
         localStorage.setItem("isLoggedIn", "false");
         localStorage.removeItem("token");
         localStorage.removeItem("user")
-        navigate("/");
+        setTimeout(() => {
+            toast.success("Logout successfully")
+            navigate("/");
+        }, 2000)
         window.location.reload();
     }
     return (
         <div className="w-full bg-gradient-to-r from-black via-gray-900 to-black fixed top-0 shadow-xl z-50">
-            <div className="max-w-7xl mx-auto flex justify-between items-center h-16 px-6">
+            <div className="max-w-7xl mx-auto flex justify-between items-center h-20 px-6">
                 {isLoggedIn && user && user.role === 'admin' ? (
                     <Link to="/adminPage" className="text-3xl font-extrabold text-transparent bg-clip-text bg-blue-500 border-b-2 border-l-2 border-gray-50 border-r-2 px-2 py-1.5 rounded-lg">
                         Turf Hub
@@ -53,7 +57,6 @@ const Navbar = () => {
                             </span>
                         </button>
                     ) :
-
                         (<Link to="/login" className="flex items-center gap-2 hover:text-blue-300 transition">
                             <User2Icon />
                             <span>Login</span>

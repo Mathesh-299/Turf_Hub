@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     FaClock,
     FaEdit,
@@ -7,6 +7,9 @@ import {
     FaRupeeSign,
     FaTrash,
 } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom';
+import { toast } from "react-toastify";
+import API from "../api/api";
 
 const districts = [
     "Chennai", "Coimbatore", "Cuddalore", "Dindigul", "Erode",
@@ -16,10 +19,15 @@ const districts = [
 ];
 
 const Ground = () => {
+    const navigate = useNavigate();
     const [turfs, setTurfs] = useState([]);
     const [selectedDistrict, setSelectedDistrict] = useState("All");
     const [showForm, setShowForm] = useState(false);
-    const [editId, setEditId] = useState(null);
+    const [edit, setEdit] = useState(false);
+    const [turfId, setTurfid] = useState(null);
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    // console.log(user.role)
+    const token = localStorage.getItem("token");
     const [formData, setFormData] = useState({
         name: "",
         location: "",
@@ -27,7 +35,23 @@ const Ground = () => {
         slots: [],
         image: "",
     });
-
+    let toaster = false;
+    const fetchData = async () => {
+        try {
+            const response = await API.get("/ground/getGround");
+            setTurfs(response.data.turfs);
+            if (!toaster) {
+                toast.dismiss();
+                toast.success("Fetched successfully");
+                toaster = true;
+            }
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    useEffect(() => {
+        fetchData();
+    }, [])
     const filteredTurfs =
         selectedDistrict === "All"
             ? turfs
@@ -35,10 +59,12 @@ const Ground = () => {
 
     const openForm = (turf = null) => {
         if (turf) {
-            setEditId(turf.id);
+            setEdit(true)
             setFormData({ ...turf });
+            setTurfid(turf._id);
+            // console.log(turf)
         } else {
-            setEditId(null);
+            setTurfid(null);
             setFormData({ name: "", location: "", price: "", slots: [], image: "" });
         }
         setShowForm(true);
@@ -46,51 +72,82 @@ const Ground = () => {
 
     const closeForm = () => {
         setShowForm(false);
-        setEditId(null);
+        // setEditId(null);
         setFormData({ name: "", location: "", price: "", slots: [], image: "" });
     };
 
-    const addNewTurf = () => {
-        const newTurf = { ...formData, id: Date.now() };
-        setTurfs((prev) => [...prev, newTurf]);
+    const addNewTurf = async (id) => {
+        console.log(formData)
+        try {
+            const response = await API.post(`/ground/addGround/${id}`, formData, {
+                // headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            await fetchData();
+            console.log(response)
+        } catch (error) {
+            console.log(error)
+        }
+
         closeForm();
     };
-
-    const updateTurf = () => {
-        setTurfs((prev) =>
-            prev.map((t) => (t.id === editId ? { ...formData, id: editId } : t))
-        );
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const updateTurf = async (turfId) => {
+        try {
+            const response = await API.put(`/ground/updateGround/${turfId}`, formData, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            const { data } = response;
+            console.log(data)
+            await fetchData();
+        } catch (error) {
+            console.log(error);
+        }
         closeForm();
-    };
-
-    const handleFormSubmit = (e) => {
+    }
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (editId) {
-            updateTurf();
-        } else {
-            addNewTurf();
+        if (edit) {
+            await updateTurf(turfId);
+            // console.log("update button clicked");
         }
+        else {
+            await addNewTurf(user.id);
+        }
+        setShowForm(false);
     };
 
-    const handleDelete = (id) => {
-        if (confirm("Are you sure you want to delete this turf?")) {
-            setTurfs((prev) => prev.filter((t) => t.id !== id));
+    const handleDelete = async (id) => {
+        console.log(id);
+        try {
+            const deleteGround = await API.delete(`/ground/deleteGround/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            await fetchData();
+            console.log(deleteGround)
+        } catch (error) {
+            console.log(error);
         }
     };
-
-    const handleBookNow = (turfName) => {
-        alert(`Redirecting to booking for ${turfName}`);
+    const handleBookNow = (id) => {
+        if (!isLoggedIn) {
+            toast.warn("Login first");
+            navigate('/login');
+        }
+        navigate("/turfParticular");
+        console.log(id)
+        // alert(`Redirecting to booking for ${turfName}`);
     };
 
     return (
-        <div className="min-h-screen pt-24 px-4 pb-10 bg-gradient-to-br from-green-100 via-yellow-100 to-green-200">
-            <h1 className="text-3xl font-bold text-center text-green-800 mb-4">Available Turf Grounds</h1>
+        <div className="min-h-screen pt-24 px-4 pb-10 bg-gradient-to-b from-cyan-200 to-white/40">
+            <h1 className="text-3xl font-bold text-center text-red-500 mb-4">Available Turf Grounds</h1>
 
             <div className="flex justify-between items-center max-w-6xl mx-auto mb-4">
                 <select
                     value={selectedDistrict}
                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className="w-1/2 px-4 py-2 border border-green-300 rounded-lg text-sm shadow focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-1/2 px-4 py-2 border border-blue-300 rounded-lg text-sm shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
                 >
                     <option value="All">All Districts</option>
                     {districts.map((district) => (
@@ -99,20 +156,23 @@ const Ground = () => {
                         </option>
                     ))}
                 </select>
-
-                <button
-                    onClick={() => openForm()}
-                    className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
-                >
-                    <FaPlus /> Add Turf
-                </button>
+                {
+                    (user.role === "admin" && user && (
+                        <button
+                            onClick={() => openForm()}
+                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
+                        >
+                            <FaPlus /> Add Turf
+                        </button>
+                    ))
+                }
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTurfs.length > 0 ? (
-                    filteredTurfs.map((turf) => (
+                    filteredTurfs.map((turf, id) => (
                         <div
-                            key={turf.id}
+                            key={id}
                             className="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden relative"
                         >
                             <img
@@ -150,20 +210,22 @@ const Ground = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => handleBookNow(turf.name)}
+                                    onClick={() => handleBookNow(turf.id)}
                                     className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 rounded-lg transition"
                                 >
                                     Book Now
                                 </button>
-
-                                <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
-                                    <button onClick={() => openForm(turf)} className="hover:text-blue-600 flex items-center gap-1">
-                                        <FaEdit /> Edit
-                                    </button>
-                                    <button onClick={() => handleDelete(turf.id)} className="hover:text-red-600 flex items-center gap-1">
-                                        <FaTrash /> Delete
-                                    </button>
-                                </div>
+                                {
+                                    (user && (user.role === 'admin' || user.role === 'owner') && (
+                                        <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
+                                            <button onClick={() => openForm(turf, turf._id)} className="hover:text-blue-600 flex items-center gap-1">
+                                                <FaEdit /> Edit
+                                            </button>
+                                            <button onClick={() => handleDelete(turf._id)} className="hover:text-red-600 flex items-center gap-1">
+                                                <FaTrash /> Delete
+                                            </button>
+                                        </div>
+                                    ))}
                             </div>
                         </div>
                     ))
@@ -183,7 +245,7 @@ const Ground = () => {
                         >
                             &times;
                         </button>
-                        <h2 className="text-xl font-bold mb-4 text-green-700">{editId ? "Edit Turf" : "Add Turf"}</h2>
+                        <h2 className="text-xl font-bold mb-4 text-green-700">{edit ? "Edit Turf" : "Add Turf"}</h2>
                         <form onSubmit={handleFormSubmit} className="space-y-4">
                             <input
                                 type="text"
@@ -244,7 +306,7 @@ const Ground = () => {
                                 type="submit"
                                 className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
                             >
-                                {editId ? "Update Turf" : "Add Turf"}
+                                {edit ? "Update Turf" : "Add Turf"}
                             </button>
                         </form>
                     </div>

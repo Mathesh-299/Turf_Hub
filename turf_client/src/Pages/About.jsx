@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const About = () => {
     return (
-        <div className="min-h-screen pt-24 bg-gradient-to-b from-white to-gray-100 text-gray-800 flex flex-col justify-between">
+        <div className="min-h-screen pt-24 bg-gradient-to-t from-white/50 to-gray-600 text-gray-800 flex flex-col justify-between">
             <div className="max-w-6xl mx-auto space-y-16 pb-12">
                 <div className="text-center space-y-4">
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-green-400 to-blue-600 drop-shadow-md">
@@ -37,7 +37,7 @@ const About = () => {
             </div>
 
             <footer className="bg-black text-white py-4 mt-10">
-                <div className="w-full mx-auto flex flex-col sm:flex-row justify-between items-center px-6 gap-6 text-sm">
+                <div className="w-full mx-auto flex flex-row sm:flex-row justify-center items-center px-6 gap-6 text-sm">
                     <div className="text-center sm:text-left">
                         <p>© 2025 Turf Hub. All rights reserved.</p>
                         <p className="opacity-75">Crafted with dedication by Mathesh</p>

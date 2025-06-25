@@ -1,106 +1,135 @@
+import { motion } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/api";
+import Phone from "../assets/img/Login.jpg";
 
 const Login = () => {
     const [form, setForm] = useState({ email: "", password: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [Submit, setSubmit] = useState(false);
+    const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 2000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setForm((prev) => ({ ...prev, [name]: value }));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (form.email.trim().length === 0 || form.password.trim().length === 0) {
-            alert("Fill all the fields");
+        setSubmit(true);
+        const { email, password } = form;
+        if (!email.trim() || !password.trim()) {
+            toast.warning("Please fill in all fields.");
             setSubmit(false);
             return;
         }
+
         try {
             const response = await API.post('/users/login', form);
             if (response?.status === 200 || response?.status === 201) {
-                // console.log("loggin successful")
-                toast.success("Successfully loggedIn");
-                setForm({ email: "", password: "" });
+                toast.success("Successfully logged in");
+
                 localStorage.setItem("token", response.data.token);
-                localStorage.setItem("isLoggedIn","true");
+                localStorage.setItem("isLoggedIn", "true");
                 localStorage.setItem("user", JSON.stringify(response.data.user));
-                console.log(user);
+                console.log(JSON.parse(localStorage.getItem("user")))
                 setTimeout(() => {
-                    navigate("/", { replace: true });
-                    window.location.reload();
-                }, 2000)
+                    setForm({ email: "", password: "" });
+                    navigate("/");
+                }, 1000);
             }
-            const { token, user } = response.data;
-            console.log(token);
-            console.log(user)
         } catch (error) {
-            console.log(error)
+            toast.error("Login failed. Please check your credentials.");
+        } finally {
+            setSubmit(false);
         }
     };
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-white/20 px-4">
-            <div className="w-full max-w-md bg-white shadow-xl rounded-xl overflow-hidden">
-                <div className="bg-blue-600 text-white py-6 px-6">
-                    <h2 className="text-3xl font-bold text-center">Welcome Back</h2>
-                    <p className="text-sm text-center mt-1">Login to your Turf Hub account</p>
-                </div>
-
-                <div className="p-8 space-y-6 bg-white">
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        <div className="relative">
-                            <Mail className="absolute top-3 left-3 text-blue-600" />
-                            <input
-                                type="email"
-                                id="email"
-                                placeholder="Email"
-                                className="w-full pl-10 pr-4 py-3 border rounded-lg shadow-sm text-blue-800 border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                value={form.email}
-                                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            />
-                        </div>
-
-                        <div className="relative">
-                            <Lock className="absolute top-3 left-3 text-blue-600" />
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                id="password"
-                                placeholder="Password"
-                                // required
-                                className="w-full pl-10 pr-10 py-3 border rounded-lg shadow-sm text-blue-800 border-gray-300 focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                value={form.password}
-                                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                            />
-                            <button
-                                type="button"
-                                onClick={() => setShowPassword(!showPassword)}
-                                className="absolute top-3 right-3 text-blue-600"
-                            >
-                                {showPassword ? <EyeOff /> : <Eye />}
-                            </button>
-                        </div>
-
-                        <button
-                            type="submit"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg shadow"
-                        // onClick={() => setSubmit(true)}
-                        >
-                            {Submit ? <span>Loading...</span> : <span>Login</span>}
-                        </button>
-                    </form>
-
-                    <p className="text-center text-sm text-gray-600">
-                        Don't have an account?{" "}
-                        <Link
-                            to="/register"
-                            className="text-blue-700 font-semibold hover:underline"
-                        >
-                            Register here
-                        </Link>
-                    </p>
-                </div>
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-black text-white">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent"></div>
             </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-black relative overflow-hidden">
+            <img
+                src={Phone}
+                alt="Background"
+                className="absolute inset-0 w-full h-full object-cover opacity-30"
+            />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
+            <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-full max-w-md z-10 bg-white/10 backdrop-blur-xl border border-white/30 text-white rounded-2xl p-8 shadow-2xl"
+            >
+                <div className="mb-6 text-center">
+                    <h2 className="text-4xl font-bold">Welcome Back 👋</h2>
+                    <p className="text-sm text-gray-200 mt-1">Login to your Turf Hub account</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="relative">
+                        <Mail className="absolute top-3 left-3 text-blue-400" />
+                        <input
+                            type="email"
+                            name="email"
+                            placeholder="Email"
+                            value={form.email}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-4 py-3 bg-white/80 text-gray-900 placeholder-gray-500 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                        />
+                    </div>
+
+                    <div className="relative">
+                        <Lock className="absolute top-3 left-3 text-blue-400" />
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            placeholder="Password"
+                            value={form.password}
+                            onChange={handleInputChange}
+                            className="w-full pl-10 pr-10 py-3 bg-white/80 text-gray-900 placeholder-gray-500 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute top-3 right-3 text-blue-600 hover:text-blue-800 transition"
+                        >
+                            {showPassword ? <EyeOff /> : <Eye />}
+                        </button>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={Submit}
+                        className="w-full py-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all duration-300 disabled:opacity-60"
+                    >
+                        {Submit ? "Logging in..." : "Login"}
+                    </button>
+                </form>
+
+                <p className="text-center text-sm text-gray-300 mt-6">
+                    Don't have an account?{" "}
+                    <Link to="/register" className="text-blue-400 hover:underline font-medium">
+                        Register here
+                    </Link>
+                </p>
+            </motion.div>
         </div>
     );
 };

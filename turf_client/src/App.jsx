@@ -7,6 +7,7 @@ import AdminPage from "./Components/AdminPage"
 import Booking from "./Components/Booking"
 import Queries from "./Components/Queries"
 import Review from "./Components/Review"
+import Turf from "./Components/Turf"
 import About from "./Pages/About"
 import Contact from "./Pages/Contact"
 import Ground from "./Pages/Ground"
@@ -33,6 +34,11 @@ const App = () => {
                     {
                         isLoggedIn && user && user.role === "admin" && (
                             <Route path="/adminPage" element={<AdminPage />} />
+                        )
+                    }
+                    {
+                        isLoggedIn && user && (
+                            <Route path="/turfParticular" element={<Turf />} />
                         )
                     }
                 </Routes>
