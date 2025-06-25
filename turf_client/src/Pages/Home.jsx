@@ -20,7 +20,7 @@ const Home = () => {
                     <p className="text-lg sm:text-xl text-gray-700">
                         Book your game turf instantly — play, compete, and enjoy.
                     </p>
-                    <Link to="/turf">
+                    <Link to="/ground">
                         <button className="mt-6 px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition active:scale-95">
                             Book a Turf Now
                         </button>

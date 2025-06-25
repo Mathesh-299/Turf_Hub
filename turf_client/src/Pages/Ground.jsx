@@ -7,7 +7,7 @@ import {
     FaRupeeSign,
     FaTrash,
 } from "react-icons/fa";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/api";
 
@@ -26,14 +26,13 @@ const Ground = () => {
     const [edit, setEdit] = useState(false);
     const [turfId, setTurfid] = useState(null);
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    // console.log(user.role)
     const token = localStorage.getItem("token");
     const [formData, setFormData] = useState({
         name: "",
         location: "",
         price: "",
         slots: [],
-        image: "",
+        image: null,
     });
     let toaster = false;
     const fetchData = async () => {
@@ -41,17 +40,18 @@ const Ground = () => {
             const response = await API.get("/ground/getGround");
             setTurfs(response.data.turfs);
             if (!toaster) {
-                toast.dismiss();
                 toast.success("Fetched successfully");
                 toaster = true;
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-    }
+    };
+
     useEffect(() => {
         fetchData();
-    }, [])
+    }, []);
+
     const filteredTurfs =
         selectedDistrict === "All"
             ? turfs
@@ -59,95 +59,94 @@ const Ground = () => {
 
     const openForm = (turf = null) => {
         if (turf) {
-            setEdit(true)
-            setFormData({ ...turf });
+            setEdit(true);
+            setFormData({ ...turf, image: null });
             setTurfid(turf._id);
-            // console.log(turf)
         } else {
             setTurfid(null);
-            setFormData({ name: "", location: "", price: "", slots: [], image: "" });
+            setFormData({ name: "", location: "", price: "", slots: [], image: null });
         }
         setShowForm(true);
     };
 
     const closeForm = () => {
         setShowForm(false);
-        // setEditId(null);
-        setFormData({ name: "", location: "", price: "", slots: [], image: "" });
+        setFormData({ name: "", location: "", price: "", slots: [], image: null });
+    };
+
+    const createFormData = () => {
+        const form = new FormData();
+        form.append("name", formData.name);
+        form.append("location", formData.location);
+        form.append("price", formData.price);
+        formData.slots.forEach((slot) => form.append("slots", slot));
+        if (formData.image) form.append("image", formData.image);
+        return form;
     };
 
     const addNewTurf = async (id) => {
-        console.log(formData)
         try {
-            const response = await API.post(`/ground/addGround/${id}`, formData, {
-                // headers: { Authorization: `Bearer ${token}` }
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            await fetchData();
-            console.log(response)
-        } catch (error) {
-            console.log(error)
-        }
-
-        closeForm();
-    };
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const updateTurf = async (turfId) => {
-        try {
-            const response = await API.put(`/ground/updateGround/${turfId}`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
-            const { data } = response;
-            console.log(data)
+            const form = createFormData();
+            await API.post(`/ground/addGround/${id}`, form, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             await fetchData();
         } catch (error) {
             console.log(error);
         }
         closeForm();
-    }
+    };
+
+    const updateTurf = async (turfId) => {
+        try {
+            const form = createFormData();
+            await API.put(`/ground/updateGround/${turfId}`, form, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            await fetchData();
+        } catch (error) {
+            console.log(error);
+        }
+        closeForm();
+    };
+
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (edit) {
-            await updateTurf(turfId);
-            // console.log("update button clicked");
-        }
-        else {
-            await addNewTurf(user.id);
-        }
-        setShowForm(false);
+        edit ? await updateTurf(turfId) : await addNewTurf(user.id);
     };
 
     const handleDelete = async (id) => {
-        console.log(id);
         try {
-            const deleteGround = await API.delete(`/ground/deleteGround/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            })
+            await API.delete(`/ground/deleteGround/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
             await fetchData();
-            console.log(deleteGround)
         } catch (error) {
             console.log(error);
         }
     };
+    const isLoggedIn = localStorage.getItem("isLoggedIn")==="true";
     const handleBookNow = (id) => {
         if (!isLoggedIn) {
             toast.warn("Login first");
-            navigate('/login');
+            navigate("/login");
+            return;
         }
-        navigate("/turfParticular");
         console.log(id)
-        // alert(`Redirecting to booking for ${turfName}`);
+        navigate("/turfParticular", { state: id });
     };
 
     return (
         <div className="min-h-screen pt-24 px-4 pb-10 bg-gradient-to-b from-cyan-200 to-white/40">
-            <h1 className="text-3xl font-bold text-center text-red-500 mb-4">Available Turf Grounds</h1>
+            <h1 className="text-3xl font-bold text-center text-red-500 mb-4">
+                Available Turf Grounds
+            </h1>
 
             <div className="flex justify-between items-center max-w-6xl mx-auto mb-4">
                 <select
                     value={selectedDistrict}
                     onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className="w-1/2 px-4 py-2 border border-blue-300 rounded-lg text-sm shadow focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    className="w-1/2 px-4 py-2 border border-blue-300 rounded-lg text-sm shadow"
                 >
                     <option value="All">All Districts</option>
                     {districts.map((district) => (
@@ -156,16 +155,14 @@ const Ground = () => {
                         </option>
                     ))}
                 </select>
-                {
-                    (user.role === "admin" && user && (
-                        <button
-                            onClick={() => openForm()}
-                            className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
-                        >
-                            <FaPlus /> Add Turf
-                        </button>
-                    ))
-                }
+                {(user.role === "admin" || user.role === "owner") && (
+                    <button
+                        onClick={() => openForm()}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
+                    >
+                        <FaPlus /> Add Turf
+                    </button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -176,14 +173,16 @@ const Ground = () => {
                             className="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden relative"
                         >
                             <img
-                                src={turf.image}
+                                src={`http://localhost:8000/${turf.image}`}
                                 alt={turf.name}
                                 className="w-full h-[160px] object-cover bg-gray-100"
                                 onError={(e) => {
                                     e.target.onerror = null;
-                                    e.target.src = "https://via.placeholder.com/400x250.png?text=Image+Unavailable";
+                                    e.target.src = "/placeholder.png";
                                 }}
                             />
+
+
                             <div className="p-4">
                                 <h2 className="text-lg font-semibold text-green-700">{turf.name}</h2>
                                 <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
@@ -195,7 +194,9 @@ const Ground = () => {
                                     {turf.price} / Hour
                                 </p>
                                 <div className="mt-2">
-                                    <p className="text-xs text-gray-600 mb-1 font-medium">Available Slots:</p>
+                                    <p className="text-xs text-gray-600 mb-1 font-medium">
+                                        Available Slots:
+                                    </p>
                                     <div className="flex flex-wrap gap-2">
                                         {turf.slots.map((slot, index) => (
                                             <span
@@ -210,22 +211,28 @@ const Ground = () => {
                                 </div>
 
                                 <button
-                                    onClick={() => handleBookNow(turf.id)}
-                                    className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 rounded-lg transition"
+                                    onClick={() => handleBookNow(turf._id)}
+                                    className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 rounded-lg"
                                 >
                                     Book Now
                                 </button>
-                                {
-                                    (user && (user.role === 'admin' || user.role === 'owner') && (
-                                        <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
-                                            <button onClick={() => openForm(turf, turf._id)} className="hover:text-blue-600 flex items-center gap-1">
-                                                <FaEdit /> Edit
-                                            </button>
-                                            <button onClick={() => handleDelete(turf._id)} className="hover:text-red-600 flex items-center gap-1">
-                                                <FaTrash /> Delete
-                                            </button>
-                                        </div>
-                                    ))}
+
+                                {(user.role === "admin" || user.role === "owner") && (
+                                    <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
+                                        <button
+                                            onClick={() => openForm(turf)}
+                                            className="hover:text-blue-600 flex items-center gap-1"
+                                        >
+                                            <FaEdit /> Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(turf._id)}
+                                            className="hover:text-red-600 flex items-center gap-1"
+                                        >
+                                            <FaTrash /> Delete
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))
@@ -245,19 +252,25 @@ const Ground = () => {
                         >
                             &times;
                         </button>
-                        <h2 className="text-xl font-bold mb-4 text-green-700">{edit ? "Edit Turf" : "Add Turf"}</h2>
+                        <h2 className="text-xl font-bold mb-4 text-green-700">
+                            {edit ? "Edit Turf" : "Add Turf"}
+                        </h2>
                         <form onSubmit={handleFormSubmit} className="space-y-4">
                             <input
                                 type="text"
                                 placeholder="Turf Name"
                                 className="w-full px-4 py-2 border rounded-lg"
                                 value={formData.name}
-                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, name: e.target.value })
+                                }
                                 required
                             />
                             <select
                                 value={formData.location}
-                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, location: e.target.value })
+                                }
                                 className="w-full px-4 py-2 border rounded-lg"
                                 required
                             >
@@ -273,15 +286,18 @@ const Ground = () => {
                                 placeholder="Price per Hour"
                                 className="w-full px-4 py-2 border rounded-lg"
                                 value={formData.price}
-                                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, price: e.target.value })
+                                }
                                 required
                             />
                             <input
-                                type="text"
-                                placeholder="Image URL"
+                                type="file"
+                                accept="image/*"
                                 className="w-full px-4 py-2 border rounded-lg"
-                                value={formData.image}
-                                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, image: e.target.files[0] })
+                                }
                             />
                             <div className="flex flex-wrap gap-2">
                                 {["Morning", "Afternoon", "Evening", "Night"].map((slot) => (
@@ -289,14 +305,14 @@ const Ground = () => {
                                         <input
                                             type="checkbox"
                                             checked={formData.slots.includes(slot)}
-                                            onChange={() => {
+                                            onChange={() =>
                                                 setFormData((prev) => ({
                                                     ...prev,
                                                     slots: prev.slots.includes(slot)
                                                         ? prev.slots.filter((s) => s !== slot)
                                                         : [...prev.slots, slot],
-                                                }));
-                                            }}
+                                                }))
+                                            }
                                         />
                                         {slot}
                                     </label>
