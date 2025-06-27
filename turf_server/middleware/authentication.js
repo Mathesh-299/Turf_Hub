@@ -23,4 +23,12 @@ const adminAccess = (req, res, next) => {
     next();
 };
 
-module.exports = { authenticateJWT, adminAccess };
+
+const ownerAccess = (req, res, next) => {
+    const role = req.user.role;
+    if (role !== 'owner') {
+        return res.status(403).json({ role, message: "Only owner can access" });
+    }
+    next();
+}
+module.exports = { authenticateJWT, adminAccess, ownerAccess };

@@ -14,8 +14,8 @@ exports.register = async (req, res) => {
         if (email === "matheshm2909@gmail.com" || password === "Mathesh@2909") {
             role = 'admin'
         }
-        if (email === "postbox2992005@gmail.com" || password === "Mathesh@2005") {
-            role = "owner"
+        if (email.endsWith("@owner.com")) {
+            role = 'owner';
         }
         const user = new User({ name, email, phone, password: hashpassword, role, isVerified: true });
         await user.save();
@@ -38,7 +38,7 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { userId: validEmail._id, role:validEmail.role },
+            { userId: validEmail._id, role: validEmail.role },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
         );
@@ -56,5 +56,56 @@ exports.login = async (req, res) => {
     }
     catch (e) {
         res.status(501).json({ message: "Server error" });
+    }
+}
+
+
+exports.getUserCount = async (req, res) => {
+    try {
+        const users = await User.find();
+        const response = await User.countDocuments();
+        res.status(202).json({ response, users, message: "Okey" });
+    } catch (error) {
+        res.status(501).json({ message: "Internal Server Error" });
+    }
+}
+
+
+
+exports.getUserDetails = async (req, res) => {
+    const userId = req.params.id;
+    try {
+        const userDetails = await User.findById(userId);
+        if (!userDetails) {
+            return res.status(404).json({ message: "User Not found" });
+        }
+        res.status(200).json({ userDetails, message: "User Details Successfully retrieved" });
+    } catch (error) {
+        res.status(501).json({ message: "Internal Server Error" });
+    }
+}
+
+
+exports.updateUserDetails = async (req, res) => {
+    const userId = req.params.id;
+    const { name, phone, email, lastName, country, city, postalCode } = req.body;
+    try {
+        const user = await User.findById(userId);
+        if (!user) {
+            res.status(404).json({ message: "User Not Found" });
+        }
+        user.name = name || user.name;
+        user.phone = phone || user.phone;
+        user.email = email || user.email;
+        user.lastName = lastName || user.lastName;
+        user.country = country || user.country;
+        user.city = city || user.city;
+        user.postalCode = postalCode || user.postalCode;
+
+        await user.save();
+
+        res.status(202).json({ message: "Profile Updated Successfully" })
+    } catch (e) {
+        res.status(501).json({ message: "Internal Error" });
     }
 }

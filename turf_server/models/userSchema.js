@@ -4,17 +4,17 @@ const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique:true
+        unique: true
     },
     email: {
         type: String,
         required: true,
-        unique:true
+        unique: true
     },
     phone: {
         type: String,
         require: true,
-        unique:true
+        unique: true
     },
     password: {
         type: String,
@@ -22,13 +22,25 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ["user", "admin","owner"],
+        enum: ["user", "admin", "owner"],
         default: "user",
     },
     isVerified: {
         type: Boolean,
         default: false,
     },
-})
+    lastName: {
+        type: String,
+    },
+    country: {
+        type: String,
+    },
+    city: {
+        type: String,
+    },
+    postalCode: {
+        type: String,
+    }
+}, { timestamps: true })
 
 module.exports = mongoose.model("User", userSchema);

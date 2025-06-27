@@ -5,10 +5,13 @@ const {
     deleteGround,
     updateGround,
     getGroundId,
+    getOwnerName,
+    editTurf,
 } = require("../controller/groundController");
 const {
     authenticateJWT,
     adminAccess,
+    ownerAccess,
 } = require("../middleware/authentication");
 const upload = require("../middleware/upload");
 const router = express.Router();
@@ -32,5 +35,6 @@ router.put(
 router.delete("/deleteGround/:id", authenticateJWT, adminAccess, deleteGround);
 router.get("/getGround", getGround);
 router.get("/getGroundId/:id", getGroundId);
-
+router.get("/getOwnerId/:id", getOwnerName)
+router.put("/editTurf/:id",authenticateJWT,ownerAccess,editTurf);
 module.exports = router;
