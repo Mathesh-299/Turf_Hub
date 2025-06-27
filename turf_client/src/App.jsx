@@ -3,12 +3,14 @@ import { ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css'
 import Login from "./Auth/Login"
 import Register from "./Auth/Register"
-import AdminPage from "./Components/AdminPage"
 import Booking from "./Components/Booking"
+import EditTurf from "./Components/EditTurf"
+import ProfilePage from "./Components/ProfilePage"
 import Queries from "./Components/Queries"
 import Review from "./Components/Review"
 import Turf from "./Components/Turf"
 import About from "./Pages/About"
+import AdminDashboard from "./Pages/AdminDashBoard"
 import Contact from "./Pages/Contact"
 import Ground from "./Pages/Ground"
 import Home from "./Pages/Home"
@@ -33,12 +35,17 @@ const App = () => {
                     <Route path="/review" element={<Review />} />
                     {
                         isLoggedIn && user && user.role === "admin" && (
-                            <Route path="/adminPage" element={<AdminPage />} />
+                            <Route path="/adminPage" element={<AdminDashboard />} />
                         )
                     }
                     {
-                        isLoggedIn && user && (
-                            <Route path="/turfParticular" element={<Turf />} />
+                        isLoggedIn && (
+                            <>
+                                <Route path="/profilePage" element={<ProfilePage />} />
+                                <Route path="/turfParticular" element={<Turf />} />
+                                <Route path="/edit-turf" element={<EditTurf />} />
+                            </>
+
                         )
                     }
                 </Routes>

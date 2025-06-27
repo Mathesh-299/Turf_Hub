@@ -3,12 +3,14 @@ import {
     FaArrowLeft,
     FaCheckCircle,
     FaClock,
+    FaEdit,
     FaFutbol,
     FaMapMarkerAlt,
     FaPhone,
     FaRupeeSign
 } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import API from "../api/api";
 
 const Turf = () => {
@@ -16,7 +18,9 @@ const Turf = () => {
     const navigate = useNavigate();
     const turfId = location.state;
     const [turf, setTurf] = useState(null);
-
+    const [ownerName, setOwnername] = useState('');
+    const user = JSON.parse(localStorage.getItem("user"));
+    // console.log(user)
     useEffect(() => {
         const fetchTurfData = async (id) => {
             try {
@@ -24,10 +28,26 @@ const Turf = () => {
                 setTurf(response.data.turfValid);
             } catch (error) {
                 console.error(error);
+                toast.error("Failed to fetch turf details");
             }
         };
         if (turfId) fetchTurfData(turfId);
+        console.log(turf)
     }, [turfId]);
+
+    useEffect(() => {
+        const fetchOwnerDetails = async () => {
+            if (turf?.ownerId) {
+                try {
+                    const response = await API.get(`/ground/getOwnerId/${turf.ownerId}`);
+                    setOwnername(response.data.name);
+                } catch (error) {
+                    toast.error("Something went wrong fetching owner info");
+                }
+            }
+        };
+        fetchOwnerDetails();
+    }, [turf?.ownerId]);
 
     if (!turf) {
         return (
@@ -48,7 +68,7 @@ const Turf = () => {
                 </button>
 
                 <img
-                    src={`http://localhost:8000/${turf.image}`}
+                    src={turf.image ? `http://localhost:8000/${turf.image}` : "/placeholder.png"}
                     alt={turf.name}
                     className="w-full h-72 object-cover border-b"
                     onError={(e) => {
@@ -58,17 +78,40 @@ const Turf = () => {
                 />
 
                 <div className="p-6 sm:p-8 space-y-6">
-                    <div>
-                        <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-1">{turf.name}</h1>
-                        <p className="text-gray-600 text-sm flex items-center gap-2 mb-2">
-                            <FaMapMarkerAlt className="text-red-500" /> {turf.location}
-                        </p>
-                        <p className="text-2xl font-semibold text-green-800 flex items-center gap-2">
-                            <FaRupeeSign /> {turf.price} / Hour
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-1">{turf.name}</h1>
+                            <p className="text-gray-600 text-sm flex items-center gap-2 mb-2">
+                                <FaMapMarkerAlt className="text-red-500" /> {turf.location}
+                            </p>
+                        </div>
+
+                        {user && user.role === "owner" && (
+                            <>
+                                {
+                                    user.id === turf?.ownerId && (
+                                        < button
+                                            onClick={() => navigate("/edit-turf", { state: turf })}
+                                            className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-md flex items-center gap-1 shadow"
+                                        >
+                                            <FaEdit /> Edit
+                                        </button>
+                                    )}
+                            </>
+                        )}
+                    </div>
+
+                    <div className="w-fit bg-green-50 p-4 rounded-lg shadow-sm transition opacity-90">
+                        <p className="text-xl font-semibold text-green-900 space-y-2">
+                            <span className="flex items-center gap-2">
+                                For Weekdays: <FaRupeeSign /> {turf.price} / Hour
+                            </span>
+                            <span className="flex items-center gap-2">
+                                For Weekends: <FaRupeeSign /> {turf.price + 200} / Hour
+                            </span>
                         </p>
                     </div>
 
-                    {/* Description */}
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800 mb-1">Description</h2>
                         <p className="text-sm text-gray-600">
@@ -78,7 +121,6 @@ const Turf = () => {
                         </p>
                     </div>
 
-                    {/* Facilities */}
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800 mb-2">Facilities</h2>
                         <ul className="grid grid-cols-2 gap-2 text-sm text-gray-700">
@@ -89,36 +131,57 @@ const Turf = () => {
                         </ul>
                     </div>
 
-                    {/* Available Slots */}
                     <div>
                         <h2 className="text-sm text-gray-700 font-medium mb-2">Available Slots:</h2>
                         <div className="flex flex-wrap gap-3">
-                            {turf.slots.map((slot, index) => (
-                                <span
-                                    key={index}
-                                    className="px-4 py-1 bg-green-200 text-green-900 text-sm rounded-full flex items-center gap-2 shadow-sm"
-                                >
-                                    <FaClock className="text-xs" />
-                                    {slot}
-                                </span>
-                            ))}
+                            {Array.isArray(turf.slots) && turf.slots.length > 0 ? (
+                                turf.slots.map((slot, index) => (
+                                    <span
+                                        key={index}
+                                        className="px-4 py-1 bg-green-200 text-green-900 text-sm rounded-full flex items-center gap-2 shadow-sm"
+                                    >
+                                        <FaClock className="text-xs" />
+                                        {slot}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-sm text-gray-500">No slots available</span>
+                            )}
                         </div>
                     </div>
 
-                    {/* Contact Info (optional) */}
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800 mb-1">Contact</h2>
                         <p className="flex items-center gap-2 text-sm text-gray-700">
                             <FaPhone className="text-green-600" />
-                            +91 98765 43210
+                            {turf.contactNumber || "+91 98765 43210"}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Address: {turf.address || "Not available"}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                            Owner: {ownerName || "Unknown"}
                         </p>
                     </div>
 
-                    {/* Status */}
                     <div className="flex items-center gap-2 text-sm mt-2 text-green-700">
                         <FaFutbol />
                         Status: <span className="font-medium">Open for Booking</span>
                     </div>
+
+                    {turf.reviews && turf.reviews.length > 0 && (
+                        <div className="mt-6">
+                            <h2 className="text-lg font-semibold text-gray-800 mb-2">Reviews</h2>
+                            <div className="space-y-3">
+                                {turf.reviews.map((review, i) => (
+                                    <div key={i} className="bg-gray-50 p-3 rounded-md shadow-sm">
+                                        <p className="text-sm text-gray-800">{review.comment}</p>
+                                        <p className="text-xs text-gray-500">Rating: {review.rating} ⭐</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <button
                         onClick={() => navigate("/booking", { state: turf._id })}
@@ -128,7 +191,7 @@ const Turf = () => {
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 

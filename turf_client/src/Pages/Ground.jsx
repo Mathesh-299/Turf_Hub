@@ -35,6 +35,7 @@ const Ground = () => {
         image: null,
     });
     let toaster = false;
+    // console.log(user);
     const fetchData = async () => {
         try {
             const response = await API.get("/ground/getGround");
@@ -125,7 +126,7 @@ const Ground = () => {
             console.log(error);
         }
     };
-    const isLoggedIn = localStorage.getItem("isLoggedIn")==="true";
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     const handleBookNow = (id) => {
         if (!isLoggedIn) {
             toast.warn("Login first");
@@ -135,7 +136,7 @@ const Ground = () => {
         console.log(id)
         navigate("/turfParticular", { state: id });
     };
-
+    // console.log(turfs)
     return (
         <div className="min-h-screen pt-24 px-4 pb-10 bg-gradient-to-b from-cyan-200 to-white/40">
             <h1 className="text-3xl font-bold text-center text-red-500 mb-4">
@@ -219,18 +220,23 @@ const Ground = () => {
 
                                 {(user.role === "admin" || user.role === "owner") && (
                                     <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
-                                        <button
-                                            onClick={() => openForm(turf)}
-                                            className="hover:text-blue-600 flex items-center gap-1"
-                                        >
-                                            <FaEdit /> Edit
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(turf._id)}
-                                            className="hover:text-red-600 flex items-center gap-1"
-                                        >
-                                            <FaTrash /> Delete
-                                        </button>
+                                        {((turf.ownerId === user.id) || (user.role === 'admin')) && (
+                                            <>
+
+                                                <button
+                                                    onClick={() => openForm(turf)}
+                                                    className="hover:text-blue-600 flex items-center gap-1"
+                                                >
+                                                    <FaEdit /> Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(turf._id)}
+                                                    className="hover:text-red-600 flex items-center gap-1"
+                                                >
+                                                    <FaTrash /> Delete
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 )}
                             </div>
