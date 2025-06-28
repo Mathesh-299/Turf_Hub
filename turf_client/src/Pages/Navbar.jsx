@@ -12,15 +12,13 @@ const Navbar = () => {
     const user = useMemo(() => JSON.parse(localStorage.getItem("user")));
     const isLoggedIn = useMemo(() => localStorage.getItem("isLoggedIn") === "true");
     const token = useMemo(() => localStorage.getItem("token"));
-    console.log(user.id);
+    // console.log(user.id);
     const handleLogout = () => {
         localStorage.setItem("isLoggedIn", "false");
         localStorage.removeItem("token");
         localStorage.removeItem("user")
-        setTimeout(() => {
-            toast.success("Logout successfully")
-            navigate("/");
-        }, 2000)
+        toast.success("Logout successfully")
+        navigate("/");
         window.location.reload();
     }
     return (

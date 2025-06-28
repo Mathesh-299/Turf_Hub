@@ -1,136 +1,186 @@
 import { useState } from "react";
-import { FaCalendarAlt, FaClock, FaMoneyBillWave } from "react-icons/fa";
+import { FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { LuCloudSun, LuMoon, LuSun, LuSunrise } from "react-icons/lu";
+import { useLocation } from "react-router";
 
-const slotOptions = ["Morning", "Afternoon", "Evening", "Night"];
-const slotPrices = {
-    Morning: 500,
-    Afternoon: 700,
-    Evening: 1000,
-    Night: 800,
-};
+// Example turf price per slot/hour
 
-const Booking = () => {
-    const [formData, setFormData] = useState({
-        date: "",
-        slot: "",
-        paymentMode: "Cash",
-    });
+const BookingTemplateDark = () => {
+    const [currentWeekStart, setCurrentWeekStart] = useState(getStartOfWeek(new Date()));
+    const [selectedDate, setSelectedDate] = useState(new Date());
+    const [timeOfDay, setTimeOfDay] = useState("Evening");
+    const [selectedSlots, setSelectedSlots] = useState([]);
+    const location = useLocation();
+    const { turf } = location.state || {};
+    const turfPricePerHour = turf?.price;
+    // console.log(turf)
+    const periods = [
+        { label: "Twilight", icon: <LuMoon /> },
+        { label: "Morning", icon: <LuSunrise /> },
+        { label: "Noon", icon: <LuSun /> },
+        { label: "Evening", icon: <LuCloudSun /> },
+    ];
 
-    const getDayOfWeek = (dateStr) => new Date(dateStr).getDay();
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        d.setDate(d.getDate() - d.getDay());
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
 
-    const calculateTotalAmount = () => {
-        const basePrice = formData.slot ? slotPrices[formData.slot] : 0;
-        const day = getDayOfWeek(formData.date);
-        return day === 0 || day === 6 ? basePrice + 200 : basePrice;
+    const getDatesForWeek = () => {
+        return Array.from({ length: 7 }, (_, i) => {
+            const d = new Date(currentWeekStart);
+            d.setDate(currentWeekStart.getDate() + i);
+            return d;
+        });
     };
 
-    const totalAmount = calculateTotalAmount();
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const handleNextWeek = () => {
+        const nextWeek = new Date(currentWeekStart);
+        nextWeek.setDate(currentWeekStart.getDate() + 7);
+        setCurrentWeekStart(nextWeek);
+        setSelectedDate(nextWeek);
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        console.log("Booking Details:", { ...formData, totalAmount });
-        alert("Booking confirmed!");
+    const handlePrevWeek = () => {
+        const prevWeek = new Date(currentWeekStart);
+        prevWeek.setDate(currentWeekStart.getDate() - 7);
+        setCurrentWeekStart(prevWeek);
+        setSelectedDate(prevWeek);
     };
 
-    const handleCancel = () => {
-        setFormData({ date: "", slot: "", paymentMode: "Cash" });
-        alert("Booking cancelled.");
+    const generateSlots = (period) => {
+        let startHour, endHour;
+        switch (period) {
+            case "Twilight": startHour = 0; endHour = 6; break;
+            case "Morning": startHour = 6; endHour = 12; break;
+            case "Noon": startHour = 12; endHour = 18; break;
+            case "Evening": startHour = 18; endHour = 24; break;
+            default: startHour = 0; endHour = 24;
+        }
+
+        const slots = [];
+        for (let h = startHour; h < endHour; h++) {
+            slots.push(`${h % 12 === 0 ? 12 : h % 12}:00 ${h < 12 ? "am" : "pm"}`);
+            slots.push(`${h % 12 === 0 ? 12 : h % 12}:30 ${h < 12 ? "am" : "pm"}`);
+        }
+        return slots;
+    };
+
+
+    const slots = generateSlots(timeOfDay);
+    const firstRow = slots.slice(0, 6);
+    const secondRow = slots.slice(6, 12);
+
+    const toggleSlot = (slot) => {
+        setSelectedSlots((prev) =>
+            prev.includes(slot)
+                ? prev.filter((s) => s !== slot)
+                : [...prev, slot].sort((a, b) => slots.indexOf(a) - slots.indexOf(b))
+        );
+    };
+
+    const totalPrice = selectedSlots.length * (turfPricePerHour / 2);
+
+
+    const getTimeRange = () => {
+        if (selectedSlots.length === 0) return "";
+        const first = selectedSlots[0];
+        const last = selectedSlots[selectedSlots.length - 1];
+        return `${first.toUpperCase()} - ${last.toUpperCase()}`;
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-white pt-20 px-6">
-            <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-lg">
-                <h2 className="text-2xl font-bold text-center text-green-600 mb-6">Book Your Turf</h2>
-
-                <form onSubmit={handleSubmit} className="space-y-5">
-                    {/* Date */}
-                    <div>
-                        <label className="block text-gray-700 font-semibold mb-1">Date</label>
-                        <div className="flex items-center border rounded px-3 py-2">
-                            <FaCalendarAlt className="mr-2 text-gray-500" />
-                            <input
-                                type="date"
-                                name="date"
-                                value={formData.date}
-                                onChange={handleChange}
-                                required
-                                className="w-full outline-none"
-                            />
-                        </div>
-                    </div>
-
-                    {/* Slot */}
-                    <div>
-                        <label className="block text-gray-700 font-semibold mb-1">Slot</label>
-                        <div className="flex items-center border rounded px-3 py-2">
-                            <FaClock className="mr-2 text-gray-500" />
-                            <select
-                                name="slot"
-                                value={formData.slot}
-                                onChange={handleChange}
-                                required
-                                className="w-full outline-none bg-transparent"
-                            >
-                                <option value="">Select a slot</option>
-                                {slotOptions.map((slot) => (
-                                    <option key={slot} value={slot}>
-                                        {slot}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    {/* Total Amount */}
-                    <div>
-                        <label className="block text-gray-700 font-semibold mb-1">Total Amount</label>
-                        <div className="flex items-center border rounded px-3 py-2 bg-gray-100">
-                            <FaMoneyBillWave className="mr-2 text-green-600" />
-                            <span className="text-green-800 font-bold">₹ {totalAmount}</span>
-                        </div>
-                        {formData.date && (getDayOfWeek(formData.date) === 0 || getDayOfWeek(formData.date) === 6) && (
-                            <p className="text-sm text-red-600 mt-1">Note: ₹200 extra for weekend bookings</p>
-                        )}
-                    </div>
-
-                    {/* Payment Mode */}
-                    <div>
-                        <label className="block text-gray-700 font-semibold mb-1">Payment Mode</label>
-                        <select
-                            name="paymentMode"
-                            value={formData.paymentMode}
-                            onChange={handleChange}
-                            className="w-full border rounded px-3 py-2"
-                        >
-                            <option value="Cash">Cash</option>
-                        </select>
-                    </div>
-
-                    {/* Buttons */}
-                    <div className="flex justify-between gap-4">
-                        <button
-                            type="submit"
-                            className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded font-semibold"
-                        >
-                            Confirm Booking
-                        </button>
-                        <button
-                            type="button"
-                            onClick={handleCancel}
-                            className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2 rounded font-semibold"
-                        >
-                            Clear Booking
-                        </button>
-                    </div>
-                </form>
+        <div className="min-h-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center pt-32 space-y-6">
+            <div>
+                <h1 className="text-white font-bold text-2xl">{turf?.name}</h1>
             </div>
+            <hr className="border-white w-full max-w-2xl" />
+            <div className="flex items-center space-x-2">
+                <button onClick={handlePrevWeek} className="p-2 rounded-full bg-neutral-800 hover:bg-neutral-700">
+                    <FaChevronLeft />
+                </button>
+
+                {getDatesForWeek().map((date, idx) => {
+                    const isSelected = date.toDateString() === selectedDate.toDateString();
+                    return (
+                        <button
+                            key={idx}
+                            onClick={() => setSelectedDate(date)}
+                            className={`flex flex-col items-center px-3 py-2 rounded-lg transition ${isSelected ? "bg-purple-700 border-2 font-bold" : "bg-neutral-800 hover:bg-neutral-700"}`}
+                        >
+                            <span className="text-xs">{date.toLocaleDateString("en-US", { weekday: "short" })}</span>
+                            <span className="text-sm font-semibold">
+                                {date.getDate()} {date.toLocaleDateString("en-US", { month: "short" })}
+                            </span>
+                        </button>
+                    );
+                })}
+                <button onClick={handleNextWeek} className="p-2 rounded-full bg-neutral-800 hover:bg-neutral-700">
+                    <FaChevronRight />
+                </button>
+            </div>
+
+            <hr className="border-white w-full max-w-2xl" />
+
+            <div className="flex space-x-2">
+                {periods.map((period) => (
+                    <button
+                        key={period.label}
+                        onClick={() => {
+                            setTimeOfDay(period.label);
+                            setSelectedSlots([]);
+                        }}
+                        className={`flex items-center space-x-1 px-4 py-2 rounded-full transition ${timeOfDay === period.label ? "bg-purple-700 border-2 font-bold" : "bg-neutral-800 hover:bg-neutral-700"}`}
+                    >
+                        <span>{period.icon}</span>
+                        <span className="text-sm">{period.label}</span>
+                    </button>
+                ))}
+            </div>
+
+            <hr className="border-white w-full max-w-2xl" />
+
+            <div className="flex flex-col space-y-2 w-full max-w-lg">
+                {[firstRow, secondRow].map((row, idx) => (
+                    <div key={idx} className="flex justify-between space-x-1">
+                        {row.map((slot, i) => (
+                            <div
+                                key={i}
+                                onClick={() => toggleSlot(slot)}
+                                className={`flex-1 text-center py-2 rounded-full cursor-pointer text-sm transition
+                            ${selectedSlots.includes(slot)
+                                        ? "bg-purple-700 border-2 font-bold hover:bg-blue-500"
+                                        : "bg-neutral-800 hover:bg-neutral-700"
+                                    }`}
+                            >
+                                {slot}
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </div>
+
+            <hr className="border-white w-full max-w-2xl" />
+
+            {selectedSlots.length > 0 && (
+                <div className="w-full max-w-2xl px-4 mt-4">
+                    <div className="bg-neutral-900 text-white p-4 rounded-lg flex justify-between items-center">
+                        <div>
+                            <p className="text-lg font-bold">₹ {totalPrice.toLocaleString()}</p>
+                            <p className="text-sm text-gray-300">{getTimeRange()}</p>
+                        </div>
+                        <button className="flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full text-sm font-semibold transition">
+                            <span>Next</span>
+                            <FaArrowRight />
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
+
 };
 
-export default Booking;
+export default BookingTemplateDark;

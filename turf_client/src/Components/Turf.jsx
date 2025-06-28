@@ -26,6 +26,7 @@ const Turf = () => {
             try {
                 const response = await API.get(`/ground/getGroundId/${id}`);
                 setTurf(response.data.turfValid);
+                // console.log(response.data.turfValid)
             } catch (error) {
                 console.error(error);
                 toast.error("Failed to fetch turf details");
@@ -184,7 +185,7 @@ const Turf = () => {
                     )}
 
                     <button
-                        onClick={() => navigate("/booking", { state: turf._id })}
+                        onClick={() => navigate("/booking", { state: { turf } })}
                         className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-lg shadow-md transition"
                     >
                         Book Now
