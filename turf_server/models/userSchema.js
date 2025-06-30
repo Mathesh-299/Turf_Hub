@@ -40,7 +40,11 @@ const userSchema = new mongoose.Schema({
     },
     postalCode: {
         type: String,
-    }
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 }, { timestamps: true })
 
 module.exports = mongoose.model("User", userSchema);

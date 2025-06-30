@@ -1,65 +1,41 @@
-import mongoose from 'mongoose';
+const mongoose = require("mongoose")
+
 
 const bookingSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
-    },
     turfId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Turf',
-        required: true,
+        ref: "Turf",
+        require: true
+    },
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        require: true
+    },
+    userName: {
+        type: String,
+        require: true
     },
     date: {
-        type: Date,
-        required: true,
-    },
-    slot: {
         type: String,
-        enum: ["Morning", "Afternoon", "Evening", "Night"],
-        required: true,
+        require: true
     },
-    totalAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-    },
-    paymentMode: {
+    session: {
         type: String,
-        enum: ["Cash", "UPI", "Card"],
-        required: true,
+        require: true
     },
-    transactionId: {
+    timeRange: {
         type: String,
-        default: null,
+        require: true
     },
-    isPaid: {
-        type: Boolean,
-        default: false,
-    },
-    status: {
+    timeDuration: {
         type: String,
-        enum: ["Pending", "Confirmed", "Cancelled"],
-        default: "Pending",
+        require: true
     },
-    cancelReason: {
-        type: String,
-        default: null,
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
-    updatedAt: {
+    createAt: {
         type: Date,
         default: Date.now,
     }
-});
+}, { timestamps: true })
 
-bookingSchema.pre('save', function (next) {
-    this.updatedAt = Date.now();
-    next();
-});
-
-export default mongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model("Booking", bookingSchema);
