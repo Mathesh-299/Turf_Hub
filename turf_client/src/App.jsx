@@ -2,6 +2,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { ToastContainer } from "react-toastify"
 import 'react-toastify/dist/ReactToastify.css'
 import Login from "./Auth/Login"
+import Payment from "./Auth/Payment"
 import Register from "./Auth/Register"
 import Booking from "./Components/Booking"
 import EditTurf from "./Components/EditTurf"
@@ -44,6 +45,7 @@ const App = () => {
                                 <Route path="/profilePage" element={<ProfilePage />} />
                                 <Route path="/turfParticular" element={<Turf />} />
                                 <Route path="/edit-turf" element={<EditTurf />} />
+                                <Route path="/paymentDetails" element={<Payment />} />
                             </>
 
                         )
