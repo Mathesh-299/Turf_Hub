@@ -10,11 +10,12 @@ import {
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/api";
+import AdminSidebar from "./Adminsidebar";
 
 const districts = [
-    "Chennai", "Coimbatore", "Cuddalore", "Dindigul", "Erode",
-    "Kanchipuram", "Krishnagiri", "Madurai", "Nagapattinam", "Namakkal",
-    "Ramanathapuram", "Salem", "Sivagangai", "Thanjavur", "Theni", "Thoothukudi",
+    "Chennai", "Coimbatore", "Cuddalore", "Dindigul", "Erode", "Kanchipuram",
+    "Krishnagiri", "Madurai", "Nagapattinam", "Namakkal", "Ramanathapuram",
+    "Salem", "Sivagangai", "Thanjavur", "Theni", "Thoothukudi",
     "Tiruchirappalli", "Tirunelveli", "Tiruppur", "Vellore", "Virudhunagar"
 ];
 
@@ -24,7 +25,7 @@ const Ground = () => {
     const [selectedDistrict, setSelectedDistrict] = useState("All");
     const [showForm, setShowForm] = useState(false);
     const [edit, setEdit] = useState(false);
-    const [turfId, setTurfid] = useState(null);
+    const [turfId, setTurfId] = useState(null);
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const token = localStorage.getItem("token");
     const [formData, setFormData] = useState({
@@ -34,18 +35,13 @@ const Ground = () => {
         slots: [],
         image: null,
     });
-    let toaster = false;
-    // console.log(user);
+
     const fetchData = async () => {
         try {
             const response = await API.get("/ground/getGround");
             setTurfs(response.data.turfs);
-            if (!toaster) {
-                toast.success("Fetched successfully");
-                toaster = true;
-            }
         } catch (error) {
-            console.log(error);
+            toast.error("Failed to fetch turfs");
         }
     };
 
@@ -53,19 +49,19 @@ const Ground = () => {
         fetchData();
     }, []);
 
-    const filteredTurfs =
-        selectedDistrict === "All"
-            ? turfs
-            : turfs.filter((turf) => turf.location === selectedDistrict);
+    const filteredTurfs = selectedDistrict === "All"
+        ? turfs
+        : turfs.filter(turf => turf.location === selectedDistrict);
 
     const openForm = (turf = null) => {
         if (turf) {
             setEdit(true);
             setFormData({ ...turf, image: null });
-            setTurfid(turf._id);
+            setTurfId(turf._id);
         } else {
-            setTurfid(null);
+            setEdit(false);
             setFormData({ name: "", location: "", price: "", slots: [], image: null });
+            setTurfId(null);
         }
         setShowForm(true);
     };
@@ -80,8 +76,10 @@ const Ground = () => {
         form.append("name", formData.name);
         form.append("location", formData.location);
         form.append("price", formData.price);
-        formData.slots.forEach((slot) => form.append("slots", slot));
-        if (formData.image) form.append("image", formData.image);
+        formData.slots.forEach(slot => form.append("slots", slot));
+        if (formData.image) {
+            form.append("image", formData.image);
+        }
         return form;
     };
 
@@ -91,249 +89,252 @@ const Ground = () => {
             await API.post(`/ground/addGround/${id}`, form, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            await fetchData();
+            fetchData();
+            toast.success("Turf added successfully");
+            closeForm();
         } catch (error) {
-            console.log(error);
+            toast.error("Failed to add turf");
         }
-        closeForm();
     };
 
-    const updateTurf = async (turfId) => {
+    const updateTurf = async () => {
         try {
             const form = createFormData();
             await API.put(`/ground/updateGround/${turfId}`, form, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            await fetchData();
+            fetchData();
+            toast.success("Turf updated successfully");
+            closeForm();
         } catch (error) {
-            console.log(error);
+            toast.error("Failed to update turf");
         }
-        closeForm();
     };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        edit ? await updateTurf(turfId) : await addNewTurf(user.id);
+        if (edit) {
+            await updateTurf();
+        } else {
+            await addNewTurf(user.id);
+        }
     };
 
     const handleDelete = async (id) => {
-        try {
-            await API.delete(`/ground/deleteGround/${id}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            await fetchData();
-        } catch (error) {
-            console.log(error);
+        if (window.confirm("Are you sure you want to delete this turf?")) {
+            try {
+                await API.delete(`/ground/deleteGround/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` },
+                });
+                fetchData();
+                toast.success("Turf deleted successfully");
+            } catch (error) {
+                toast.error("Failed to delete turf");
+            }
         }
     };
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
     const handleBookNow = (id) => {
-        if (!isLoggedIn) {
-            toast.warn("Login first");
+        // console.log(localStorage.getItem("isLoggedIn"))
+        if (localStorage.getItem("isLoggedIn") === "false") {
+            toast.warn("Please login to book a turf.");
             navigate("/login");
-            return;
+        } else {
+            navigate("/turfParticular", { state: id });
         }
-        console.log(id)
-        navigate("/turfParticular", { state: id });
     };
-    // console.log(turfs)
+
     return (
-        <div className="min-h-screen pt-24 px-4 pb-10 bg-gradient-to-r from-gray-300 via-gray-400 to-gray-900">
-            <h1 className="text-3xl font-bold text-center text-emerald-900 mb-4">
-                Available Turf Grounds
-            </h1>
+        <div className="flex pt-20">
+            {user.role === "admin" && <AdminSidebar />}
+            <div className="flex-1 min-h-screen pt-24 px-4 pb-10 bg-gradient-to-r from-gray-100 to-green-50">
+                <div className="max-w-6xl mx-auto">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-center text-green-800 mb-6">
+                        Available Turf Grounds
+                    </h1>
 
-            <div className="flex justify-between items-center max-w-6xl mx-auto mb-4">
-                <select
-                    value={selectedDistrict}
-                    onChange={(e) => setSelectedDistrict(e.target.value)}
-                    className="w-1/2 px-4 py-2 border border-blue-300 rounded-lg text-sm shadow"
-                >
-                    <option value="All">All Districts</option>
-                    {districts.map((district) => (
-                        <option key={district} value={district}>
-                            {district}
-                        </option>
-                    ))}
-                </select>
-                {(user.role === "admin" || user.role === "owner") && (
-                    <button
-                        onClick={() => openForm()}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg shadow"
-                    >
-                        <FaPlus /> Add Turf
-                    </button>
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredTurfs.length > 0 ? (
-                    filteredTurfs.map((turf, id) => (
-                        <div
-                            key={id}
-                            className="bg-white rounded-xl shadow-md hover:shadow-lg transition duration-300 overflow-hidden relative hover:scale-90"
+                    <div className="flex flex-col sm:flex-row justify-between items-center gap-3 mb-6">
+                        <select
+                            value={selectedDistrict}
+                            onChange={(e) => setSelectedDistrict(e.target.value)}
+                            className="w-full sm:w-1/3 px-4 py-2 border rounded shadow text-sm"
                         >
-                            <img
-                                src={`http://localhost:8000/${turf.image}`}
-                                alt={turf.name}
-                                className="w-full h-[160px] object-cover bg-gray-100"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "/placeholder.png";
-                                }}
-                            />
+                            <option value="All">All Districts</option>
+                            {districts.map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                            ))}
+                        </select>
 
+                        {(user.role === "admin" || user.role === "owner") && (
+                            <button
+                                onClick={() => openForm()}
+                                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow"
+                            >
+                                <FaPlus /> Add Turf
+                            </button>
+                        )}
+                    </div>
 
-                            <div className="p-4">
-                                <h2 className="text-lg font-semibold text-green-700">{turf.name}</h2>
-                                <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
-                                    <FaMapMarkerAlt className="text-red-500" />
-                                    {turf.location}
-                                </p>
-                                <p className="text-sm text-gray-700 flex items-center gap-2 mt-1">
-                                    <FaRupeeSign className="text-green-600" />
-                                    {turf.price} / Hour
-                                </p>
-                                <div className="mt-2">
-                                    <p className="text-xs text-gray-600 mb-1 font-medium">
-                                        Available Slots:
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {turf.slots.map((slot, index) => (
-                                            <span
-                                                key={index}
-                                                className="px-2 py-0.5 bg-green-200 text-green-800 rounded-full text-xs font-semibold"
-                                            >
-                                                <FaClock className="inline-block mr-1 text-xs" />
-                                                {slot}
-                                            </span>
-                                        ))}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredTurfs.length > 0 ? (
+                            filteredTurfs.map((turf) => (
+                                <div
+                                    key={turf._id}
+                                    className="bg-white rounded-xl shadow hover:shadow-lg transition-transform duration-200 hover:scale-[1.02]"
+                                >
+                                    <img
+                                        src={`http://localhost:8000/${turf.image}`}
+                                        alt={turf.name}
+                                        className="w-full h-48 object-cover rounded-t-xl"
+                                        onError={(e) => {
+                                            e.target.src = "/placeholder.png";
+                                        }}
+                                    />
+                                    <div className="p-4">
+                                        <h2 className="text-lg font-semibold text-green-700">
+                                            {turf.name}
+                                        </h2>
+                                        <p className="flex items-center text-sm text-gray-600 mt-1">
+                                            <FaMapMarkerAlt className="mr-1" /> {turf.location}
+                                        </p>
+                                        <p className="flex items-center text-sm text-gray-700 mt-1">
+                                            <FaRupeeSign className="mr-1" /> {turf.price} / Hour
+                                        </p>
+                                        <div className="mt-2">
+                                            <p className="text-xs text-gray-500 font-medium">Available Slots:</p>
+                                            <div className="flex flex-wrap gap-1 mt-1">
+                                                {turf.slots.map((slot, idx) => (
+                                                    <span
+                                                        key={idx}
+                                                        className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1"
+                                                    >
+                                                        <FaClock className="text-[10px]" /> {slot}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => handleBookNow(turf._id)}
+                                            className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm"
+                                        >
+                                            Book Now
+                                        </button>
+
+                                        {(user.role === "admin" || user.role === "owner") &&
+                                            (turf.ownerId === user.id || user.role === "admin") && (
+                                                <div className="flex justify-end gap-2 mt-3">
+                                                    <button
+                                                        onClick={() => openForm(turf)}
+                                                        className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                                                    >
+                                                        <FaEdit /> Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(turf._id)}
+                                                        className="text-red-600 hover:text-red-800 text-sm flex items-center gap-1"
+                                                    >
+                                                        <FaTrash /> Delete
+                                                    </button>
+                                                </div>
+                                            )}
                                     </div>
                                 </div>
+                            ))
+                        ) : (
+                            <p className="text-center col-span-full text-gray-500">
+                                No turfs available for this district.
+                            </p>
+                        )}
+                    </div>
 
+                    {showForm && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-lg p-6 w-full max-w-md relative">
                                 <button
-                                    onClick={() => handleBookNow(turf._id)}
-                                    className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-medium text-sm py-2 rounded-lg"
+                                    onClick={closeForm}
+                                    className="absolute top-2 right-3 text-red-600 text-xl"
                                 >
-                                    Book Now
+                                    &times;
                                 </button>
-
-                                {(user.role === "admin" || user.role === "owner") && (
-                                    <div className="flex justify-end gap-3 mt-3 text-sm text-green-800">
-                                        {((turf.ownerId === user.id) || (user.role === 'admin')) && (
-                                            <>
-
-                                                <button
-                                                    onClick={() => openForm(turf)}
-                                                    className="hover:text-blue-600 flex items-center gap-1"
-                                                >
-                                                    <FaEdit /> Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(turf._id)}
-                                                    className="hover:text-red-600 flex items-center gap-1"
-                                                >
-                                                    <FaTrash /> Delete
-                                                </button>
-                                            </>
-                                        )}
+                                <h2 className="text-xl font-semibold mb-4 text-green-700">
+                                    {edit ? "Edit Turf" : "Add Turf"}
+                                </h2>
+                                <form onSubmit={handleFormSubmit} className="space-y-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Turf Name"
+                                        value={formData.name}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, name: e.target.value })
+                                        }
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                        required
+                                    />
+                                    <select
+                                        value={formData.location}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, location: e.target.value })
+                                        }
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                        required
+                                    >
+                                        <option value="">Select District</option>
+                                        {districts.map((d) => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                    </select>
+                                    <input
+                                        type="number"
+                                        placeholder="Price per Hour"
+                                        value={formData.price}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, price: e.target.value })
+                                        }
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                        required
+                                    />
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, image: e.target.files[0] })
+                                        }
+                                        className="w-full border rounded px-3 py-2 text-sm"
+                                    />
+                                    <div className="flex flex-wrap gap-2">
+                                        {["Morning", "Afternoon", "Evening", "Night"].map((slot) => (
+                                            <label
+                                                key={slot}
+                                                className="flex items-center gap-1 text-xs"
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formData.slots.includes(slot)}
+                                                    onChange={() =>
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            slots: prev.slots.includes(slot)
+                                                                ? prev.slots.filter((s) => s !== slot)
+                                                                : [...prev.slots, slot],
+                                                        }))
+                                                    }
+                                                />
+                                                {slot}
+                                            </label>
+                                        ))}
                                     </div>
-                                )}
+                                    <button
+                                        type="submit"
+                                        className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg text-sm"
+                                    >
+                                        {edit ? "Update Turf" : "Add Turf"}
+                                    </button>
+                                </form>
                             </div>
                         </div>
-                    ))
-                ) : (
-                    <p className="text-center col-span-full text-gray-600 font-medium">
-                        No turfs available for this district.
-                    </p>
-                )}
-            </div>
-
-            {showForm && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md relative">
-                        <button
-                            onClick={closeForm}
-                            className="absolute top-2 right-3 text-red-500 hover:text-red-700 text-xl"
-                        >
-                            &times;
-                        </button>
-                        <h2 className="text-xl font-bold mb-4 text-green-700">
-                            {edit ? "Edit Turf" : "Add Turf"}
-                        </h2>
-                        <form onSubmit={handleFormSubmit} className="space-y-4">
-                            <input
-                                type="text"
-                                placeholder="Turf Name"
-                                className="w-full px-4 py-2 border rounded-lg"
-                                value={formData.name}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, name: e.target.value })
-                                }
-                                required
-                            />
-                            <select
-                                value={formData.location}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, location: e.target.value })
-                                }
-                                className="w-full px-4 py-2 border rounded-lg"
-                                required
-                            >
-                                <option value="">Select District</option>
-                                {districts.map((district) => (
-                                    <option key={district} value={district}>
-                                        {district}
-                                    </option>
-                                ))}
-                            </select>
-                            <input
-                                type="number"
-                                placeholder="Price per Hour"
-                                className="w-full px-4 py-2 border rounded-lg"
-                                value={formData.price}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, price: e.target.value })
-                                }
-                                required
-                            />
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="w-full px-4 py-2 border rounded-lg"
-                                onChange={(e) =>
-                                    setFormData({ ...formData, image: e.target.files[0] })
-                                }
-                            />
-                            <div className="flex flex-wrap gap-2">
-                                {["Morning", "Afternoon", "Evening", "Night"].map((slot) => (
-                                    <label key={slot} className="flex items-center gap-1 text-sm">
-                                        <input
-                                            type="checkbox"
-                                            checked={formData.slots.includes(slot)}
-                                            onChange={() =>
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    slots: prev.slots.includes(slot)
-                                                        ? prev.slots.filter((s) => s !== slot)
-                                                        : [...prev.slots, slot],
-                                                }))
-                                            }
-                                        />
-                                        {slot}
-                                    </label>
-                                ))}
-                            </div>
-                            <button
-                                type="submit"
-                                className="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg"
-                            >
-                                {edit ? "Update Turf" : "Add Turf"}
-                            </button>
-                        </form>
-                    </div>
+                    )}
                 </div>
-            )}
+            </div>
         </div>
     );
 };

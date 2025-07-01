@@ -67,7 +67,7 @@ const ProfilePage = () => {
     }, [profileId, token]);
 
     return (
-        <div className="min-h-screen pt-24 bg-gradient-to-b from-slate-50 to-slate-100 ">
+        <div className="min-h-screen pt-24 pb-10 bg-gradient-to-b from-slate-50 to-slate-100 ">
             {userData ? (
                 <div className="max-w-3xl mx-auto space-y-8 animate-fadeIn">
 

@@ -5,31 +5,31 @@ const About = () => {
     return (
         <div className="min-h-screen pt-24 bg-gradient-to-t from-white/50 to-gray-600 text-gray-800 flex flex-col justify-between">
             <div className="max-w-6xl mx-auto space-y-16 pb-12">
-                <div className="text-center space-y-4">
+                <div className="text-center space-y-4 text-white">
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-green-400 to-blue-600 drop-shadow-md">
                         About Turf Hub
                     </h1>
-                    <p className="text-lg text-gray-700">
+                    <p className="text-lg">
                         Turf Hub is a smart turf booking platform that makes it easy to find and reserve play slots for your favorite sports.
                     </p>
-                    <p className="text-md text-gray-600 max-w-3xl mx-auto">
+                    <p className="text-md max-w-3xl mx-auto">
                         We provide real-time turf availability, secure booking, and personalized scheduling for football, cricket, badminton, and more — so you can focus on enjoying your game without hassle.
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-3 gap-10 text-center">
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-green-400 transition">
-                        <Users className="mx-auto text-blue-500 w-10 h-10 mb-4" />
+                <div className="grid md:grid-cols-3 gap-10 text-center ">
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-green-400 transition hover:scale-95">
+                        <Users className="mx-auto text-blue-500 w-10 h-10 mb-4 animate-pulse" />
                         <h2 className="text-xl font-semibold text-blue-600">Community Driven</h2>
                         <p className="text-gray-600">Thousands of players, one platform. Turf Hub is built for everyone.</p>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-blue-400 transition">
-                        <Calendar className="mx-auto text-green-500 w-10 h-10 mb-4" />
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-blue-400 transition hover:scale-95">
+                        <Calendar className="mx-auto text-green-500 w-10 h-10 mb-4 animate-pulse" />
                         <h2 className="text-xl font-semibold text-green-600">Live Slot Booking</h2>
                         <p className="text-gray-600">Book instantly with real-time turf availability.</p>
                     </div>
-                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-yellow-400 transition">
-                        <Trophy className="mx-auto text-yellow-500 w-10 h-10 mb-4" />
+                    <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-yellow-400 transition hover:scale-95">
+                        <Trophy className="mx-auto text-yellow-500 w-10 h-10 mb-4 animate-pulse" />
                         <h2 className="text-xl font-semibold text-yellow-600">Game-Ready Always</h2>
                         <p className="text-gray-600">Our mission is to get you on the turf — fast, easy, and reliably.</p>
                     </div>

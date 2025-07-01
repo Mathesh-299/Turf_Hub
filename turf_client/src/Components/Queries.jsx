@@ -1,103 +1,90 @@
-import { Mail, MessageCircle, Trash2 } from "lucide-react";
-import { useState } from "react";
-
-const initialQueries = [
-    {
-        id: 1,
-        name: "Mathesh M",
-        email: "mathesh@example.com",
-        message:
-            "What are the available slots for Madurai turf? I’d like to book between 4PM to 6PM if possible. Also, is there lighting available during night slots?",
-        date: "2025-06-21",
-    },
-    {
-        id: 2,
-        name: "John Doe",
-        email: "john@example.com",
-        message: "Is there parking available at the Chennai turf?",
-        date: "2025-06-20",
-    },
-    {
-        id: 3,
-        name: "Priya S",
-        email: "priya@example.com",
-        message:
-            "Can I book for a whole day? I want to conduct a sports tournament and need full day access.",
-        date: "2025-06-18",
-    },
-];
+import { useEffect, useState } from "react";
+import { FaChevronDown, FaChevronUp, FaTrash } from "react-icons/fa";
+import { toast } from "react-toastify";
+import API from "../api/api";
+import AdminSidebar from "../Pages/Adminsidebar";
 
 const Queries = () => {
-    const [queries, setQueries] = useState(initialQueries);
     const [expandedId, setExpandedId] = useState(null);
+    const [queries, setQueries] = useState([]);
+    const token = localStorage.getItem("token");
+
+    const fetchQueries = async () => {
+        try {
+            const response = await API.get("/contactUs/getQuery", {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setQueries(response.data.queries);
+        } catch (error) {
+            console.log(error);
+            toast.error("Failed to fetch queries.");
+        }
+    };
 
     const toggleExpand = (id) => {
         setExpandedId(expandedId === id ? null : id);
     };
 
-    const handleDelete = (id) => {
+    const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this query?")) {
-            setQueries((prev) => prev.filter((query) => query.id !== id));
+            try {
+                await API.delete(`/contactUs/deleteQuery/${id}`, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+                setQueries((prev) => prev.filter((query) => query._id !== id));
+                toast.success("Query deleted.");
+            } catch (error) {
+                console.log(error);
+                toast.error("Failed to delete query.");
+            }
         }
     };
 
+    useEffect(() => {
+        fetchQueries();
+    }, []);
+
     return (
-        <div className="min-h-screen px-4 pt-24 pb-12 bg-gradient-to-br from-sky-100 via-emerald-50 to-yellow-100">
-            <h2 className="text-3xl font-bold text-center text-blue-800 mb-10">User Queries</h2>
-            <div className="max-w-6xl mx-auto grid gap-6">
-                {queries.length === 0 ? (
-                    <p className="text-center text-gray-600 text-lg">No queries available.</p>
-                ) : (
-                    queries.map((query) => {
-                        const isExpanded = expandedId === query.id;
-                        const messagePreview =
-                            query.message.length > 100 ? `${query.message.slice(0, 100)}...` : query.message;
+        <div className="flex pt-[5rem]">
+            <AdminSidebar />
+            <div className="flex-1 min-h-screen pt-24 px-4 pb-16 bg-gradient-to-br from-gray-100 to-green-50">
+                <div className="max-w-4xl mx-auto">
+                    <h1 className="text-3xl font-bold text-green-800 mb-6">User Queries</h1>
 
-                        return (
-                            <div
-                                key={query.id}
-                                className="bg-white rounded-xl shadow-xl border border-gray-200 p-6 relative"
-                            >
-                                <button
-                                    onClick={() => handleDelete(query.id)}
-                                    className="absolute top-4 right-4 text-red-500 hover:text-red-700"
-                                    title="Delete query"
-                                >
-                                    <Trash2 size={20} />
-                                </button>
-
-                                <div className="flex flex-col sm:flex-row justify-between gap-4">
-                                    <div className="flex gap-4">
-                                        <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
-                                            {query.name.charAt(0)}
-                                        </div>
+                    {queries.length === 0 ? (
+                        <p className="text-center text-gray-500">No queries found.</p>
+                    ) : (
+                        <div className="flex flex-col gap-4">
+                            {queries.map((query) => (
+                                <div key={query._id} className="bg-white p-4 rounded-xl shadow">
+                                    <div className="flex justify-between items-center">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-800">{query.name}</h3>
-                                            <p className="text-sm text-gray-600 flex items-center gap-1">
-                                                <Mail size={14} className="text-green-500" />
-                                                {query.email}
-                                            </p>
+                                            <h2 className="text-lg font-semibold text-green-700">{query.Name}</h2>
+                                            <p className="text-sm text-gray-600">{query.Email}</p>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => toggleExpand(query._id)}
+                                                className="text-green-700 hover:text-green-900"
+                                            >
+                                                {expandedId === query._id ? <FaChevronUp /> : <FaChevronDown />}
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(query._id)}
+                                                className="text-red-600 hover:text-red-800"
+                                            >
+                                                <FaTrash />
+                                            </button>
                                         </div>
                                     </div>
-                                    <p className="text-sm text-gray-500">{new Date(query.date).toLocaleDateString()}</p>
-                                </div>
-
-                                <div className="mt-4 text-gray-700 text-sm leading-relaxed">
-                                    <MessageCircle className="inline-block mr-1 mb-1 text-yellow-600" size={16} />
-                                    {isExpanded ? query.message : messagePreview}
-                                    {query.message.length > 100 && (
-                                        <button
-                                            onClick={() => toggleExpand(query.id)}
-                                            className="ml-2 text-blue-600 hover:underline text-xs"
-                                        >
-                                            {isExpanded ? "Show Less" : "Read More"}
-                                        </button>
+                                    {expandedId === query._id && (
+                                        <p className="mt-2 text-gray-700">{query.Message}</p>
                                     )}
                                 </div>
-                            </div>
-                        );
-                    })
-                )}
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
