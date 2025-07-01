@@ -5,32 +5,32 @@ const bookingSchema = new mongoose.Schema({
     turfId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Turf",
-        require: true
+        required: true
     },
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        require: true
+        required: true
     },
     userName: {
         type: String,
-        require: true
+        required: true
     },
     date: {
         type: String,
-        require: true
+        required: true
     },
     session: {
         type: String,
-        require: true
+        required: true
     },
     timeRange: {
         type: String,
-        require: true
+        required: true
     },
     timeDuration: {
         type: String,
-        require: true
+        required: true
     },
     createAt: {
         type: Date,
