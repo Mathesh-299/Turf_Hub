@@ -79,7 +79,7 @@ const AdminDashboard = () => {
         <div className="flex pt-20">
             <AdminSidebar />
 
-            <div className="flex-1 min-h-screen pt-24 px-4 pb-16 bg-gradient-to-br from-gray-100 to-green-50">
+            <div className="flex-1 min-h-screen pt-10 px-4 pb-16 bg-gradient-to-br from-gray-100 to-green-50">
                 <div className="max-w-6xl mx-auto">
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
                         <h1 className="text-3xl font-bold text-green-800">Admin Dashboard</h1>

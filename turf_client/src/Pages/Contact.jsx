@@ -1,22 +1,18 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router";
+import { Link } from "react-router-dom";
+import { toast } from "react-toastify";
 import API from '../api/api';
 const Contact = () => {
     const [formData, setFormData] = useState({
         Name: "",
         Email: "",
         Message: "",
-
     })
     const token = localStorage.getItem("token");
     const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // if (formData.Email.trim().length === 0 || formData.Name.trim().length === 0 || formData.Message.trim().length === 0) {
-        //     alert("Fill the all details");
-        //     return;
-        // };
         const { Email, Name, Message } = formData;
         if (Email.length === 0 || Name.length === 0 || Message.length === 0) {
             console.log("fill the details");
@@ -24,17 +20,19 @@ const Contact = () => {
         }
         try {
             const response = await API.post("/contactUs/postQuery", formData, {
-                headers: { Authorization: ` Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` }
             })
-            console.log(response)
+            console.log(response.status)
+            if (response.status === 200) {
+                toast.success("Message sent successfully!");
+                setFormData({ Name: "", Email: "", Message: "" });
+            }
         } catch (error) {
-
+            toast.error("Something went wrong. Please try again.");
+            console.error(error);
         }
-        setFormData({
-            Name: "",
-            Email: "",
-            Message: "",
-        })
+
+
     }
     return (
         <div className="min-h-screen pt-24 px-6 bg-gradient-to-b pb-10 from-purple-600 via-black/50 to-purple-900 text-gray-800">
@@ -75,6 +73,7 @@ const Contact = () => {
                             type="text"
                             placeholder="Your Name"
                             name="Name"
+                            value={formData.Name}
                             onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
                             className="w-full border border-gray-300 rounded-md px-4 py-2 focus:bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                         // required
@@ -83,6 +82,7 @@ const Contact = () => {
                             type="email"
                             placeholder="Your Email"
                             name='Email'
+                            value={formData.Email}
                             onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
                             className="w-full border border-gray-300 rounded-md px-4 py-2  focus:bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
                         // required
@@ -91,8 +91,10 @@ const Contact = () => {
                             placeholder="Your Message"
                             rows="4"
                             name='Message'
+                            value={formData.Message}
                             onChange={(e) => setFormData({ ...formData, [e.target.name]: e.target.value })}
-                            className="w-full border border-gray-300 rounded-md px-4 py-2  focus:bg-white text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full border border-gray-300 rounded-md px-4 py-2  focus:bg-white
+                            text-black focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                         // required
                         ></textarea>
 
@@ -104,6 +106,7 @@ const Contact = () => {
                             >
                                 Send Message
                             </button>
+
                             :
                             <Link to="/login">
                                 <p className="text-red-500 text-xl text-center font-bold border-2 border-gray-600 max-w-fit hover:scale-105 py-1 px-2 rounded-full bg-white hover:bg-red-500 hover:text-white">Oops! Please log in first</p>

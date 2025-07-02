@@ -185,7 +185,7 @@ const Ground = () => {
                                     <img
                                         src={`http://localhost:8000/${turf.image}`}
                                         alt={turf.name}
-                                        className="w-full h-48 object-cover rounded-t-xl"
+                                        className="w-full h-48 object-cover object-center rounded-t-xl"
                                         onError={(e) => {
                                             e.target.src = "/placeholder.png";
                                         }}

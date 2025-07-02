@@ -26,17 +26,17 @@ const Queries = () => {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm("Are you sure you want to delete this query?")) {
-            try {
-                await API.delete(`/contactUs/deleteQuery/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setQueries((prev) => prev.filter((query) => query._id !== id));
-                toast.success("Query deleted.");
-            } catch (error) {
-                console.log(error);
-                toast.error("Failed to delete query.");
+        try {
+            const deleteResponse = await API.delete(`/contactUs/deleteQuery/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            if (deleteResponse.status === 200) {
+                fetchQueries();
+                toast.success("Deleted");
             }
+            console.log(deleteResponse)
+        } catch (error) {
+            console.log(error);
         }
     };
 
