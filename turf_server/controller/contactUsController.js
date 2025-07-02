@@ -27,3 +27,17 @@ exports.getQuery = async (req, res) => {
         res.status(501).json({ message: "Internal Server Error" });
     }
 }
+
+
+exports.deleteQuery = async (req, res) => {
+    const id = req.params.id;
+    try {
+        const detetedId = await ContactUs.findByIdAndDelete(id);
+        if (!detetedId) {
+            res.status(404).json({ message: "Id not found" });
+        }
+        res.status(200).json({ message: "Deleted Successfully" });
+    } catch (error) {
+        res.status(501).json({ message: "Internal Server Error" });
+    }
+}

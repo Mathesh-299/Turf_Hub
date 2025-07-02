@@ -32,6 +32,24 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    paymentMethod: {
+        type: String,
+        enum: ["UPI", "Credit / Debit Card", "Cash on Arrival"],
+        required: false
+    },
+    paymentOption: {
+        type: String,
+        required: false
+    },
+    Amount: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ["Booked", "Cancelled"],
+        default: "Booked"
+    },
     createAt: {
         type: Date,
         default: Date.now,
