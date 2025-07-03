@@ -6,11 +6,23 @@ import { toast } from "react-toastify";
 import API from "../api/api";
 import computeTimeRangeAndDuration from "../utils/computeTimeRangeAndDuration";
 
+function getLocalDateString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 function getStartOfWeek(date) {
-    const d = new Date(date);
+    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
     return d;
+}
+
+function formatSlotTime(h, m) {
+    const mer = h >= 12 ? "PM" : "AM";
+    h = h % 12 === 0 ? 12 : h % 12;
+    return `${h}:${m.toString().padStart(2, "0")} ${mer}`;
 }
 
 const BookingTemplateDark = () => {
@@ -32,12 +44,11 @@ const BookingTemplateDark = () => {
         { label: "Evening", icon: LuCloudSun }
     ];
 
-    const getDatesForWeek = () =>
-        [...Array(7)].map((_, i) => {
-            const d = new Date(currentWeekStart);
-            d.setDate(currentWeekStart.getDate() + i);
-            return d;
-        });
+    const getDatesForWeek = () => [...Array(7)].map((_, i) => {
+        const d = new Date(currentWeekStart);
+        d.setDate(currentWeekStart.getDate() + i);
+        return d;
+    });
 
     const generateSlots = (period) => {
         let startHour = 0, endHour = 24;
@@ -48,8 +59,8 @@ const BookingTemplateDark = () => {
 
         const slots = [];
         for (let h = startHour; h < endHour; h++) {
-            slots.push(`${h % 12 === 0 ? 12 : h % 12}:00 ${h < 12 ? "AM" : "PM"}`);
-            slots.push(`${h % 12 === 0 ? 12 : h % 12}:30 ${h < 12 ? "AM" : "PM"}`);
+            slots.push(formatSlotTime(h, 0));
+            slots.push(formatSlotTime(h, 30));
         }
         return slots;
     };
@@ -73,7 +84,7 @@ const BookingTemplateDark = () => {
     const expandBookedRanges = (ranges) => {
         const expanded = [];
         ranges.forEach(rangeStr => {
-            const [startStr, endStr] = rangeStr.split(/–|—|-/).map(s => s.trim());
+            const [startStr, endStr] = rangeStr.split(/\s*[-–—]\s*/).map(s => s.trim());
             let start = parseTimeString(startStr);
             const end = parseTimeString(endStr);
             while (start < end) {
@@ -101,7 +112,7 @@ const BookingTemplateDark = () => {
     };
 
     const toggleSlot = (slot) => {
-        const dateKey = `${selectedDate.toISOString().split("T")[0]}_${timeOfDay}_${slot}`;
+        const dateKey = `${getLocalDateString(selectedDate)}_${timeOfDay}_${slot}`;
         if (bookedSlotStrings.includes(dateKey)) return;
         setSelectedSlots(prev =>
             prev.includes(slot)
@@ -120,7 +131,7 @@ const BookingTemplateDark = () => {
         const { timeRange, timeDuration } = computeTimeRangeAndDuration(selectedSlots, parseTimeString);
         const bookingPayload = {
             userName: user?.name,
-            date: selectedDate.toISOString().split("T")[0],
+            date: getLocalDateString(selectedDate),
             session: timeOfDay,
             timeRange,
             timeDuration,
@@ -131,26 +142,19 @@ const BookingTemplateDark = () => {
 
     const fetchAvailable = async () => {
         if (!turf?._id || !selectedDate || !timeOfDay) return;
-
-        const dateStr = selectedDate.toISOString().split("T")[0];
+        const dateStr = getLocalDateString(selectedDate);
+        console.log(dateStr)
         const token = localStorage.getItem("token");
-
         try {
             const response = await API.get(`/booking/getSlots/${turf._id}/${dateStr}/${timeOfDay}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-
             const bookedSlotsData = response.data.bookedSlots || [];
-
             const expandedKeys = bookedSlotsData.flatMap(slot => {
                 const times = expandBookedRanges([slot.timeRange]);
-                // ✅ Use `slot.date` directly if backend returns correct date per booking.
                 return times.map(time => `${slot.date}_${slot.session}_${time}`);
             });
-
-            // ✅ Filter only for the currently selected date
             const filteredKeys = expandedKeys.filter(key => key.startsWith(`${dateStr}_${timeOfDay}_`));
-
             setBookedSlotStrings(filteredKeys);
         } catch (error) {
             console.error("Fetch error:", error);
@@ -158,19 +162,15 @@ const BookingTemplateDark = () => {
         }
     };
 
-
     useEffect(() => {
         fetchAvailable();
     }, [selectedDate, timeOfDay, turf?._id]);
 
     const slots = generateSlots(timeOfDay);
-
     return (
-        <main className="min-h-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center pt-24 pb-36 sm:pt-32 gap-6 px-2">
+        <div className="min-h-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center pt-24 pb-36 sm:pt-32 gap-6 px-2">
             <h1 className="text-2xl font-bold text-center">{turf?.name}</h1>
             <hr className="border-white w-full max-w-2xl" />
-
-            {/* Date Navigation */}
             <section className="flex items-center justify-center gap-2 w-full max-w-3xl overflow-x-auto scrollbar-hide">
                 <button onClick={handlePrevWeek} disabled={currentWeekStart <= getStartOfWeek(new Date())}
                     className={`p-2 rounded-full ${currentWeekStart <= getStartOfWeek(new Date())
@@ -183,10 +183,18 @@ const BookingTemplateDark = () => {
                     const past = d < today;
                     const sel = d.toDateString() === selectedDate.toDateString();
                     return (
-                        <button key={d} disabled={past} onClick={() => !past && setSelectedDate(d)}
+                        <button
+                            key={d.toISOString()}
+                            disabled={past}
+                            onClick={() => {
+                                if (!past) {
+                                    console.log(d.getMonth());
+                                    setSelectedDate(d);
+                                }
+                            }}
                             className={`flex flex-col items-center min-w-[3.6rem] px-2 py-2 rounded-lg
-                                ${sel ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}
-                                ${past && "opacity-40 cursor-not-allowed"}`}>
+                ${sel ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}
+                ${past && "opacity-40 cursor-not-allowed"}`}>
                             <span>{d.toLocaleDateString("en-US", { weekday: "short" })}</span>
                             <span className="text-sm">{d.getDate()} {d.toLocaleDateString("en-US", { month: "short" })}</span>
                         </button>
@@ -215,7 +223,7 @@ const BookingTemplateDark = () => {
             <section className="grid gap-2 w-full max-w-lg"
                 style={{ gridTemplateColumns: "repeat(auto-fill,minmax(90px,1fr))" }}>
                 {slots.map(slot => {
-                    const key = `${selectedDate.toISOString().split("T")[0]}_${timeOfDay}_${slot}`;
+                    const key = `${getLocalDateString(selectedDate)}_${timeOfDay}_${slot}`;
                     const isBooked = bookedSlotStrings.includes(key);
                     const isSelected = selectedSlots.includes(slot);
                     return (
@@ -224,7 +232,7 @@ const BookingTemplateDark = () => {
                             title={isBooked ? "Already booked" : ""}
                             className={`text-center py-2 rounded-full cursor-pointer
                                 ${isBooked
-                                    ? "bg-red-700 opacity-50 cursor-not-allowed"
+                                    ? "bg-gray-700 text-black opacity-50 disabled"
                                     : isSelected
                                         ? "bg-purple-700 font-semibold"
                                         : "bg-neutral-800 hover:bg-neutral-700"}`}>
@@ -247,7 +255,7 @@ const BookingTemplateDark = () => {
                     </button>
                 </section>
             )}
-        </main>
+        </div>
     );
 };
 
