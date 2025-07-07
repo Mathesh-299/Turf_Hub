@@ -25,8 +25,8 @@ const Register = () => {
 
     const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    const isStrongPassword = (password) =>
-        /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+    const isStrongPassword = (password) => /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+    const isValidPhoneNumber = (phone) => /^[0-9]{10}$/.test(phone);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -41,6 +41,10 @@ const Register = () => {
         }
         if (!isStrongPassword(password)) {
             toast.error("Password must be 8+ characters, 1 uppercase, 1 number, 1 special char");
+            return;
+        }
+        if (!isValidPhoneNumber(phone)) {
+            toast.error("Phone Number must be only digits");
             return;
         }
         setButtonSubmit(true);
@@ -60,8 +64,16 @@ const Register = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-800 to-black">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-400 border-t-transparent"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-300 via-fuchsia-800 to-indigo-900">
+                <div className="animate-pulse">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-fuchsia-600 border-t-transparent">
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-r-transparent">
+                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-600 border-b-transparent">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-900 border-l-transparent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }

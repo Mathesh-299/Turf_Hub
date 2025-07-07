@@ -207,7 +207,6 @@ const BookingTemplateDark = () => {
             </section>
             <hr className="border-white w-full max-w-2xl" />
 
-            {/* Session Buttons */}
             <section className="flex flex-wrap justify-center gap-2 max-w-3xl">
                 {periods.map(({ label, icon: Icon }) => (
                     <button key={label} onClick={() => { setTimeOfDay(label); setSelectedSlots([]); }}
@@ -219,7 +218,6 @@ const BookingTemplateDark = () => {
             </section>
             <hr className="border-white w-full max-w-2xl" />
 
-            {/* Time Slots */}
             <section className="grid gap-2 w-full max-w-lg"
                 style={{ gridTemplateColumns: "repeat(auto-fill,minmax(90px,1fr))" }}>
                 {slots.map(slot => {
@@ -242,7 +240,6 @@ const BookingTemplateDark = () => {
                 })}
             </section>
 
-            {/* Bottom Booking Info */}
             {selectedSlots.length > 0 && (
                 <section className="fixed bottom-0 left-0 right-0 bg-green-600 p-4 flex justify-between items-center sm:static sm:rounded-lg sm:max-w-xl">
                     <div>

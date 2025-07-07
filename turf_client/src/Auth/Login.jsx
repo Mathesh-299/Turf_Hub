@@ -53,11 +53,13 @@ const Login = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-400 via-neutral-500  to-gray-800">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-r-transparent">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-t-transparent">
-                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-l-transparent">
-                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-b-transparent"></div>
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-400 via-neutral-500  to-gray-800">
+                <div className="animate-pulse">
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-400 border-r-transparent">
+                        <div className="animate-spin rounded-full h-16 w-16 border-4 border-yellow-400 border-t-transparent">
+                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-cyan-400 border-l-transparent">
+                                <div className="animate-spin rounded-full h-16 w-16 border-4 border-lime-400 border-b-transparent"></div>
+                            </div>
                         </div>
                     </div>
                 </div>

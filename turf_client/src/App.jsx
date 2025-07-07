@@ -33,7 +33,6 @@ const App = () => {
                     <Route path="/register" element={<Register />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/queries" element={<Queries />} />
-                    <Route path="/review" element={<Review />} />
                     {
                         isLoggedIn && user && user.role === "admin" && (
                             <Route path="/adminPage" element={<AdminDashboard />} />
@@ -46,6 +45,7 @@ const App = () => {
                                 <Route path="/turfParticular" element={<Turf />} />
                                 <Route path="/edit-turf" element={<EditTurf />} />
                                 <Route path="/paymentDetails" element={<Payment />} />
+                                <Route path="/review" element={<Review />} />
                             </>
 
                         )

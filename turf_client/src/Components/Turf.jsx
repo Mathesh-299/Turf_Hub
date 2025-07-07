@@ -6,34 +6,33 @@ import {
     FaEdit,
     FaFutbol,
     FaMapMarkerAlt,
-    FaPhone,
-    FaRupeeSign
+    FaRupeeSign,
+    FaStar
 } from "react-icons/fa";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/api";
+import TurfContactCard from "../Pages/TurfCard";
 
 const Turf = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const turfId = location.state;
     const [turf, setTurf] = useState(null);
-    const [ownerName, setOwnername] = useState('');
+    const [ownerName, setOwnerName] = useState('');
     const user = JSON.parse(localStorage.getItem("user"));
-    // console.log(user)
+
     useEffect(() => {
         const fetchTurfData = async (id) => {
             try {
                 const response = await API.get(`/ground/getGroundId/${id}`);
                 setTurf(response.data.turfValid);
-                // console.log(response.data.turfValid)
             } catch (error) {
                 console.error(error);
                 toast.error("Failed to fetch turf details");
             }
         };
         if (turfId) fetchTurfData(turfId);
-        console.log(turf)
     }, [turfId]);
 
     useEffect(() => {
@@ -41,7 +40,7 @@ const Turf = () => {
             if (turf?.ownerId) {
                 try {
                     const response = await API.get(`/ground/getOwnerId/${turf.ownerId}`);
-                    setOwnername(response.data.name);
+                    setOwnerName(response.data.name);
                 } catch (error) {
                     toast.error("Something went wrong fetching owner info");
                 }
@@ -59,66 +58,58 @@ const Turf = () => {
     }
 
     return (
-        <div className="min-h-screen pt-24 px-4 pb-16 bg-gradient-to-br from-green-100 to-white">
+        <div className="min-h-screen pt-24 px-4 pb-16 bg-gray-200">
             <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden relative">
+
                 <button
                     onClick={() => navigate(-1)}
-                    className="absolute top-4 left-4 bg-green-100 hover:bg-green-200 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow-sm"
+                    className="absolute top-4 left-4 bg-green-100 hover:bg-white/50 text-green-800 px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow-sm"
                 >
                     <FaArrowLeft /> Back
                 </button>
 
                 <img
                     src={turf.image ? `http://localhost:8000/${turf.image}` : "/placeholder.png"}
-                    alt={turf.name}
+                    alt={turf.name || "Turf Image"}
                     className="w-full h-72 object-cover border-b"
                     onError={(e) => {
                         e.target.onerror = null;
                         e.target.src = "/placeholder.png";
                     }}
                 />
-
                 <div className="p-6 sm:p-8 space-y-6">
+
                     <div className="flex justify-between items-start">
                         <div>
-                            <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-1">{turf.name}</h1>
-                            <p className="text-gray-600 text-sm flex items-center gap-2 mb-2">
-                                <FaMapMarkerAlt className="text-red-500" /> {turf.location}
+                            <h1 className="text-3xl sm:text-4xl font-bold text-green-700 mb-1">{turf.name || "Turf Name"}</h1>
+                            <p className="text-gray-600 text-sm flex items-center gap-2">
+                                <FaMapMarkerAlt className="text-red-500" />
+                                {turf.location || "Location not provided"}
                             </p>
                         </div>
-
-                        {user && user.role === "owner" && (
-                            <>
-                                {
-                                    user.id === turf?.ownerId && (
-                                        < button
-                                            onClick={() => navigate("/edit-turf", { state: turf })}
-                                            className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-md flex items-center gap-1 shadow"
-                                        >
-                                            <FaEdit /> Edit
-                                        </button>
-                                    )}
-                            </>
+                        {user?.role === "owner" && user?.id === turf?.ownerId && (
+                            <button
+                                onClick={() => navigate("/edit-turf", { state: turf })}
+                                className="bg-yellow-400 hover:bg-yellow-500 text-white px-3 py-1 rounded-md flex items-center gap-1 shadow"
+                            >
+                                <FaEdit /> Edit
+                            </button>
                         )}
                     </div>
-
-                    <div className="w-fit bg-green-50 p-4 rounded-lg shadow-sm transition opacity-90">
-                        <p className="text-xl font-semibold text-green-900 space-y-2">
+                    <div className="bg-green-50 p-4 rounded-lg shadow-sm w-fit">
+                        <p className="text-xl font-semibold text-green-900 space-y-1">
                             <span className="flex items-center gap-2">
-                                For Weekdays: <FaRupeeSign /> {turf.price} / Hour
+                                Weekdays: <FaRupeeSign /> {turf.price || 500} / Hour
                             </span>
                             <span className="flex items-center gap-2">
-                                For Weekends: <FaRupeeSign /> {turf.price + 200} / Hour
+                                Weekends: <FaRupeeSign /> {(turf.price || 500) + 200} / Hour
                             </span>
                         </p>
                     </div>
-
                     <div>
                         <h2 className="text-lg font-semibold text-gray-800 mb-1">Description</h2>
                         <p className="text-sm text-gray-600">
-                            This turf is perfect for football, cricket, and group sports events.
-                            It offers a clean environment, night lighting, and ample parking space.
-                            Book in advance to ensure availability during peak hours.
+                            {turf.description || "This turf is perfect for football, cricket, and group sports events. It offers a clean environment, night lighting, and ample parking space. Book in advance to ensure availability during peak hours."}
                         </p>
                     </div>
 
@@ -151,24 +142,22 @@ const Turf = () => {
                         </div>
                     </div>
 
-                    <div>
-                        <h2 className="text-lg font-semibold text-gray-800 mb-1">Contact</h2>
-                        <p className="flex items-center gap-2 text-sm text-gray-700">
-                            <FaPhone className="text-green-600" />
-                            {turf.contactNumber || "+91 98765 43210"}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Address: {turf.address || "Not available"}
-                        </p>
-                        <p className="text-sm text-gray-600 mt-1">
-                            Owner: {ownerName || "Unknown"}
-                        </p>
-                    </div>
+                    <TurfContactCard turf={turf} ownerName={ownerName} />
 
-                    <div className="flex items-center gap-2 text-sm mt-2 text-green-700">
+                    <div className="flex items-center gap-2 text-md text-green-700">
                         <FaFutbol />
                         Status: <span className="font-medium">Open for Booking</span>
                     </div>
+
+                    <Link
+                        to="/review"
+                        state={turf._id}
+                        className="flex items-center gap-1 text-md text-green-700 hover:text-green-800 transition font-bold"
+                    >
+                        {/* <button onClick={() => console.log(turf._id)}></button> */}
+                        <FaStar />
+                        <span>Add your experience</span>
+                    </Link>
 
                     {turf.reviews && turf.reviews.length > 0 && (
                         <div className="mt-6">
@@ -183,16 +172,14 @@ const Turf = () => {
                             </div>
                         </div>
                     )}
-
-                    <button
-                        onClick={() => navigate("/booking", { state: { turf } })}
-                        className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-lg shadow-md transition"
-                    >
-                        Book Now
-                    </button>
+                    <Link to="/booking" state={turf}>
+                        <button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-lg shadow-md transition">
+                            Book Now
+                        </button>
+                    </Link>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 
