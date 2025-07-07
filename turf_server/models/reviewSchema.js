@@ -1,5 +1,4 @@
-import mongoose from "mongoose";
-
+const mongoose = require("mongoose");
 const reviewSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -11,13 +10,17 @@ const reviewSchema = new mongoose.Schema({
         ref: "Turf",
         required: true,
     },
-    rating: {
+    Name: {
+        type: String,
+        required: true,
+    },
+    Rating: {
         type: Number,
         min: 1,
         max: 5,
         required: true,
     },
-    comment: {
+    Comment: {
         type: String,
         trim: true,
     },
@@ -27,4 +30,4 @@ const reviewSchema = new mongoose.Schema({
     },
 });
 
-export default mongoose.model("Review", reviewSchema);
+module.exports = mongoose.model("Review", reviewSchema);

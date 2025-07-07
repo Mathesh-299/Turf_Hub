@@ -21,3 +21,4 @@ app.use("/api/users", require("./routes/user"));
 app.use("/api/ground", require("./routes/ground"));
 app.use("/api/contactUs", require("./routes/contactUs"));
 app.use("/api/booking", require("./routes/booking"));
+app.use("/api/reviews", require("./routes/review"));
