@@ -72,7 +72,8 @@ const ProfilePage = () => {
             const response = await API.get(`/booking/getUserBookings/${profileId}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            setBookings(response.data.bookings || []);
+            console.log(response)
+            setBookings(response.data.booking || []);
         } catch (error) {
             console.error(error);
             if (!toaster) {
@@ -202,12 +203,13 @@ const ProfilePage = () => {
                             {bookings.map((booking, idx) => (
                                 <div
                                     key={idx}
-                                    className="bg-white/70 backdrop-blur p-3 rounded-lg shadow border border-slate-200 hover:bg-blue-50 transition"
+                                    className="bg-white/70 backdrop-blur p-3 rounded-lg space-y-1 shadow border border-slate-200 hover:bg-yellow-50 transition"
                                 >
                                     <p className="font-semibold text-blue-700">
-                                        {booking.turfName} - ₹{booking.price} on {new Date(booking.date).toLocaleDateString()}
+                                        {booking.turfId?.name} - ₹{booking.Amount} on {new Date(booking.date).toLocaleDateString()}
                                     </p>
-                                    <p className="text-sm text-slate-600">Slots: {booking.slots.join(", ")}</p>
+                                    <p className="text-sm text-neutral-900">Slots: {booking.timeRange}</p>
+                                    <p className="text-sm text-neutral-500">Turf Price per Hr: {booking.turfId?.price}</p>
                                 </div>
                             ))}
                         </div>
