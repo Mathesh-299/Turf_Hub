@@ -1,6 +1,5 @@
 const Booking = require("../models/bookingSchema");
-
-
+const User = require("../models/userSchema");
 exports.bookingData = async (req, res) => {
     const { turfId, userId } = req.params;
     const { userName, date, session, timeRange, timeDuration, paymentMethod, paymentOption, status, Amount } = req.body;
@@ -32,6 +31,21 @@ exports.getSlots = async (req, res) => {
             session: b.session
         }));
         res.status(200).json({ bookedSlots });
+    } catch (error) {
+        res.status(501).json({ message: "Internal Server Error" });
+    }
+}
+
+
+exports.getUserBookingDetails = async (req, res) => {
+    const { profileId } = req.params;
+    try {
+        const userValid = await User.findById(profileId);
+        if (!userValid) {
+            return res.status(404).json({ message: "User Not found" });
+        }
+        const booking = await Booking.find({ userId: profileId }).populate("turfId", "name location price timeRange").sort({ createdAt: -1 })
+        res.status(200).json({ booking, message: "Retrived Successfully" });
     } catch (error) {
         res.status(501).json({ message: "Internal Server Error" });
     }
