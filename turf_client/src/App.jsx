@@ -12,6 +12,7 @@ import Review from "./Components/Review"
 import Turf from "./Components/Turf"
 import About from "./Pages/About"
 import AdminDashboard from "./Pages/AdminDashBoard"
+import AllReviews from "./Pages/AllReviews"
 import Contact from "./Pages/Contact"
 import Ground from "./Pages/Ground"
 import Home from "./Pages/Home"
@@ -46,6 +47,7 @@ const App = () => {
                                 <Route path="/edit-turf" element={<EditTurf />} />
                                 <Route path="/paymentDetails" element={<Payment />} />
                                 <Route path="/review" element={<Review />} />
+                                <Route path="/all-reviews" element={<AllReviews />} />
                             </>
 
                         )

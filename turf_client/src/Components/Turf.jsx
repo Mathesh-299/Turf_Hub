@@ -21,7 +21,10 @@ const Turf = () => {
     const [turf, setTurf] = useState(null);
     const [ownerName, setOwnerName] = useState('');
     const user = JSON.parse(localStorage.getItem("user"));
-
+    const [reviews, setReviews] = useState({
+        totalReviews: "",
+        averageRating: ""
+    });
     useEffect(() => {
         const fetchTurfData = async (id) => {
             try {
@@ -48,7 +51,21 @@ const Turf = () => {
         };
         fetchOwnerDetails();
     }, [turf?.ownerId]);
+    const fetchOverAllRating = async () => {
+        try {
+            const response = await API.get(`/reviews/overAllReviews/${turfId}`);
 
+            setReviews(response.data);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+    useEffect(() => {
+        // fetchRatings();
+        fetchOverAllRating();
+    }, []);
+    console.log(reviews.totalReviews);
+    console.log(reviews.averageRating);
     if (!turf) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-white">
@@ -159,20 +176,25 @@ const Turf = () => {
                         <span>Add your experience</span>
                     </Link>
 
-                    {turf.reviews && turf.reviews.length > 0 && (
+                    {reviews.totalReviews > 0 && (
                         <div className="mt-6">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-2">Reviews</h2>
-                            <div className="space-y-3">
-                                {turf.reviews.map((review, i) => (
-                                    <div key={i} className="bg-gray-50 p-3 rounded-md shadow-sm">
-                                        <p className="text-sm text-gray-800">{review.comment}</p>
-                                        <p className="text-xs text-gray-500">Rating: {review.rating} ⭐</p>
-                                    </div>
-                                ))}
+                            <h2 className="text-lg font-semibold text-green-700 mb-2">Overall Rating</h2>
+                            <div className="bg-gray-50 p-4 rounded-xl shadow flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex items-center gap-2 text-green-700 text-xl font-semibold">
+                                    <FaStar className="text-yellow-400" />
+                                    {reviews.averageRating} / 5
+                                </div>
+                                <button
+                                    onClick={() => navigate("/all-reviews", { state: turfId })}
+                                    className="text-sm text-green-700 hover:text-green-800"
+                                >
+                                    Based on {reviews.totalReviews} {reviews.totalReviews === 1 ? "review" : "reviews"}
+                                </button>
+
                             </div>
                         </div>
                     )}
-                    <Link to="/booking" state={turf}>
+                    <Link to="/booking" state={ turf }>
                         <button className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg text-lg shadow-md transition">
                             Book Now
                         </button>

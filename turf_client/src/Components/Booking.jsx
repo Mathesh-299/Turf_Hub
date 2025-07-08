@@ -31,8 +31,9 @@ const BookingTemplateDark = () => {
     const [timeOfDay, setTimeOfDay] = useState("Evening");
     const [selectedSlots, setSelectedSlots] = useState([]);
     const [bookedSlotStrings, setBookedSlotStrings] = useState([]);
-    const { state } = useLocation();
-    const { turf } = state || {};
+    const location = useLocation();
+    const turf =  location.state;
+    // console.log(turf)
     const turfPricePerHour = turf?.price ?? 0;
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const navigate = useNavigate();
@@ -43,6 +44,7 @@ const BookingTemplateDark = () => {
         { label: "Noon", icon: LuSun },
         { label: "Evening", icon: LuCloudSun }
     ];
+    console.log(turf)
 
     const getDatesForWeek = () => [...Array(7)].map((_, i) => {
         const d = new Date(currentWeekStart);
@@ -241,13 +243,13 @@ const BookingTemplateDark = () => {
             </section>
 
             {selectedSlots.length > 0 && (
-                <section className="fixed bottom-0 left-0 right-0 bg-green-600 p-4 flex justify-between items-center sm:static sm:rounded-lg sm:max-w-xl">
+                <section className="fixed bottom-0 left-0 right-0 bg-purple-600 p-4 flex justify-between gap-10 items-center sm:static sm:rounded-lg sm:max-w-xl">
                     <div>
                         <p className="text-lg font-bold">₹ {totalPrice.toLocaleString()}</p>
                         <p className="text-sm text-yellow-300">{selectedSlots.join(", ")}</p>
                     </div>
                     <button onClick={handleBookSubmit}
-                        className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-full">
+                        className="flex items-center gap-2 text-blue-600 bg-white hover:bg-blue-600 hover:text-white font-bold px-4 py-2 rounded-full">
                         Next <FaArrowRight />
                     </button>
                 </section>
