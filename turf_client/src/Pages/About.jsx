@@ -19,17 +19,17 @@ const About = () => {
 
                 <div className="grid md:grid-cols-3 gap-10 text-center ">
                     <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-green-400 transition hover:scale-95">
-                        <Users className="mx-auto text-blue-500 w-10 h-10 mb-4 animate-pulse" />
+                        <Users className="mx-auto text-blue-500 w-10 h-10 mb-4 hover:animate-pulse" />
                         <h2 className="text-xl font-semibold text-blue-600">Community Driven</h2>
                         <p className="text-gray-600">Thousands of players, one platform. Turf Hub is built for everyone.</p>
                     </div>
                     <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-blue-400 transition hover:scale-95">
-                        <Calendar className="mx-auto text-green-500 w-10 h-10 mb-4 animate-pulse" />
+                        <Calendar className="mx-auto text-green-500 w-10 h-10 mb-4 hover:animate-pulse" />
                         <h2 className="text-xl font-semibold text-green-600">Live Slot Booking</h2>
                         <p className="text-gray-600">Book instantly with real-time turf availability.</p>
                     </div>
                     <div className="bg-white p-6 rounded-2xl shadow-lg border hover:border-yellow-400 transition hover:scale-95">
-                        <Trophy className="mx-auto text-yellow-500 w-10 h-10 mb-4 animate-pulse" />
+                        <Trophy className="mx-auto text-yellow-500 w-10 h-10 mb-4 hover:animate-pulse" />
                         <h2 className="text-xl font-semibold text-yellow-600">Game-Ready Always</h2>
                         <p className="text-gray-600">Our mission is to get you on the turf — fast, easy, and reliably.</p>
                     </div>

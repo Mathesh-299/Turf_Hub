@@ -15,6 +15,7 @@ const Contact = () => {
         e.preventDefault();
         const { Email, Name, Message } = formData;
         if (Email.length === 0 || Name.length === 0 || Message.length === 0) {
+            toast.warning("Fill the details");
             console.log("fill the details");
             return;
         }
@@ -35,7 +36,7 @@ const Contact = () => {
 
     }
     return (
-        <div className="min-h-screen pt-24 px-6 bg-gradient-to-b pb-10 from-purple-600 via-black/50 to-purple-900 text-gray-800">
+        <div className="min-h-screen pt-24 px-6 bg-gradient-to-b pb-10 from-purple-600 via-black to-purple-900 text-gray-800">
             <div className="max-w-5xl mx-auto space-y-16 text-center">
                 <div className="space-y-4">
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-500 via-green-400 to-blue-600 drop-shadow-md">
@@ -48,17 +49,17 @@ const Contact = () => {
                 </div>
 
                 <div className="grid sm:grid-cols-3 gap-8">
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-green-400 transition">
+                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-green-400 transition hover:scale-110">
                         <Phone className="mx-auto text-green-500 w-8 h-8 mb-3" />
                         <h2 className="text-lg font-semibold text-gray-800">Phone</h2>
                         <p className="text-gray-600 text-sm">+91 98765 43210</p>
                     </div>
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-blue-400 transition">
+                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-blue-400 transition hover:scale-110">
                         <Mail className="mx-auto text-blue-500 w-8 h-8 mb-3" />
                         <h2 className="text-lg font-semibold text-gray-800">Email</h2>
                         <p className="text-gray-600 text-sm">support@turfhub.com</p>
                     </div>
-                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-red-400 transition">
+                    <div className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl border hover:border-red-400 transition hover:scale-110">
                         <MapPin className="mx-auto text-red-500 w-8 h-8 mb-3" />
                         <h2 className="text-lg font-semibold text-gray-800">Location</h2>
                         <p className="text-gray-600 text-sm">Chennai, Tamil Nadu, India</p>
@@ -66,9 +67,9 @@ const Contact = () => {
                 </div>
 
                 <div className="mt-12">
-                    <form className="bg-white/10 max-w-xl mx-auto p-8 rounded-2xl shadow-lg space-y-6 border"
+                    <form className="bg-white/60 max-w-xl mx-auto p-8 rounded-2xl shadow-lg space-y-6 border"
                         onSubmit={handleSubmit}>
-                        <h2 className="text-2xl font-bold text-blue-600 mb-2">Send Us a Message</h2>
+                        <h2 className="text-2xl font-bold text-red-700 mb-2">Send Us a Message</h2>
                         <input
                             type="text"
                             placeholder="Your Name"

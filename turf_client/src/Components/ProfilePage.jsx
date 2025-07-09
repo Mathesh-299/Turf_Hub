@@ -1,4 +1,4 @@
-import { CalendarDays, Loader2, Pencil } from 'lucide-react';
+import { CalendarDays, FileUserIcon, Home, Loader2, Pencil } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { toast } from 'react-toastify';
@@ -117,12 +117,15 @@ const ProfilePage = () => {
 
                 <div className="bg-white rounded-3xl shadow-md p-6 space-y-5 border border-slate-200">
                     <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-                        <h3 className="text-lg md:text-xl font-semibold text-slate-700">Personal Information</h3>
+                        <h3 className="text-lg md:text-xl font-bold text-slate-700 flex items-center gap-1">
+                            <FileUserIcon size={26} className='text-blue-600' />
+                            Personal Information
+                        </h3>
                         <button
                             onClick={() => setEditEnable(!editEnable)}
-                            className="flex items-center gap-1 text-sm md:text-base bg-gradient-to-tr from-orange-500 to-orange-400 text-white px-4 py-1.5 rounded-full hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-orange-300"
+                            className="flex items-center gap-1 text-sm md:text-base font-semibold hover:bg-red-600 bg-white text-red-600 hover:text-white px-4 py-1.5 rounded-full hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-orange-300"
                         >
-                            <Pencil size={16} /> {editEnable ? "Close" : "Edit"}
+                            <Pencil size={20} /> {editEnable ? "Close" : "Edit"}
                         </button>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-700">
@@ -142,7 +145,9 @@ const ProfilePage = () => {
                 </div>
 
                 <div className="bg-white rounded-3xl shadow-md p-6 space-y-5 border border-slate-200">
-                    <h3 className="text-lg md:text-xl font-semibold text-slate-700 border-b pb-2 border-slate-200">Address</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-slate-700 border-b pb-2 border-slate-200 flex items-center gap-1">
+                        <Home size={26} className='text-blue-600' />
+                        Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-700">
                         {[
                             { label: "Country", value: userData.country },
@@ -157,59 +162,28 @@ const ProfilePage = () => {
                     </div>
                 </div>
 
-                {editEnable && (
-                    <div className="bg-white rounded-3xl shadow-md p-6 space-y-5 border border-slate-200 animate-fadeIn">
-                        <h3 className="text-lg md:text-xl font-semibold text-slate-700 border-b pb-2 border-slate-200">Edit Profile</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                            {["name", "lastName", "email", "phone", "country", "city", "postalCode"].map((field) => (
-                                <div key={field} className="flex flex-col gap-1">
-                                    <label className="text-sm text-slate-500 capitalize">
-                                        {field.replace(/([A-Z])/g, ' $1')}
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name={field}
-                                        value={updateForm[field]}
-                                        onChange={handleChange}
-                                        placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1')}`}
-                                        className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-slate-400 bg-white transition"
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setEditEnable(false)}
-                                className="px-4 py-2 rounded-full bg-slate-200 text-slate-700 hover:bg-slate-300 transition focus:outline-none focus:ring-2 focus:ring-slate-300"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleUpdate}
-                                className="px-4 py-2 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            >
-                                Update
-                            </button>
-                        </div>
-                    </div>
-                )}
+                {/* User booking Details */}
 
                 <div className="bg-white rounded-3xl shadow-md p-6 space-y-5 border border-slate-200">
                     <h3 className="text-lg md:text-xl font-semibold text-slate-700 border-b pb-2 border-slate-200 flex items-center gap-2">
-                        <CalendarDays size={20} className="text-blue-500" /> My Bookings
+                        <CalendarDays size={26} className="text-blue-600 " />
+                        <span className='font-bold'>
+                            My Bookings
+                        </span>
                     </h3>
                     {bookings.length > 0 ? (
                         <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                             {bookings.map((booking, idx) => (
                                 <div
                                     key={idx}
-                                    className="bg-white/70 backdrop-blur p-3 rounded-lg space-y-1 shadow border border-slate-200 hover:bg-yellow-50 transition"
+                                    className="bg-white/70 backdrop-blur p-3 rounded-lg space-y-1 shadow border border-slate-200 hover:bg-yellow-500 transition"
                                 >
                                     <p className="font-semibold text-blue-700">
                                         {booking.turfId?.name} - ₹{booking.Amount} on {new Date(booking.date).toLocaleDateString()}
                                     </p>
-                                    <p className="text-sm text-neutral-900">Slots: {booking.timeRange}</p>
-                                    <p className="text-sm text-neutral-500">Turf Price per Hr: {booking.turfId?.price}</p>
+                                    <p className="text-sm text-black">Date: {booking.date}</p>
+                                    <p className="text-sm text-neutral-600">Slots: {booking.timeRange}</p>
+                                    <p className="text-sm text-neutral-300">Turf Price per Hr: {booking.turfId?.price}</p>
                                 </div>
                             ))}
                         </div>
@@ -217,6 +191,44 @@ const ProfilePage = () => {
                         <p className="text-slate-500 text-sm">No bookings found.</p>
                     )}
                 </div>
+
+                {/* Profile Editing option */}
+                    {editEnable && (
+                        <div className="bg-white rounded-3xl shadow-md p-6 space-y-5 border border-slate-200 animate-fadeIn">
+                            <h3 className="text-lg md:text-xl font-semibold text-slate-700 border-b pb-2 border-slate-200">Edit Profile</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                                {["name", "lastName", "email", "phone", "country", "city", "postalCode"].map((field) => (
+                                    <div key={field} className="flex flex-col gap-1">
+                                        <label className="text-sm text-slate-500 capitalize">
+                                            {field.replace(/([A-Z])/g, ' $1')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            name={field}
+                                            value={updateForm[field]}
+                                            onChange={handleChange}
+                                            placeholder={`Enter ${field.replace(/([A-Z])/g, ' $1')}`}
+                                            className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 placeholder-slate-400 bg-white transition"
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setEditEnable(false)}
+                                    className="px-4 py-2 rounded-full bg-slate-200 text-slate-700 hover:bg-slate-300 transition focus:outline-none focus:ring-2 focus:ring-slate-300"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleUpdate}
+                                    className="px-4 py-2 rounded-full bg-gradient-to-tr from-blue-600 to-blue-500 text-white hover:scale-105 transition-transform focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                >
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    )}
             </div>
         </div>
     );

@@ -195,8 +195,8 @@ const BookingTemplateDark = () => {
                                 }
                             }}
                             className={`flex flex-col items-center min-w-[3.6rem] px-2 py-2 rounded-lg
-                ${sel ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}
-                ${past && "opacity-40 cursor-not-allowed"}`}>
+                            ${sel ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}
+                            ${past && "opacity-40 cursor-not-allowed"}`}>
                             <span>{d.toLocaleDateString("en-US", { weekday: "short" })}</span>
                             <span className="text-sm">{d.getDate()} {d.toLocaleDateString("en-US", { month: "short" })}</span>
                         </button>

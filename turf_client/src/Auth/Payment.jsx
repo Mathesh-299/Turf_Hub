@@ -23,6 +23,7 @@ const Payment = () => {
         turfId: "",
         userId: ""
     })
+    // console.log(price)
     useEffect(() => {
         if (bookingData) setData(bookingData);
         if (turf) {
@@ -67,8 +68,17 @@ const Payment = () => {
                 headers: { Authorization: `Bearer ${token}` }
             })
             console.log(response)
-            navigate(-1);
+            if (response.status === 200 || response.status === 201) {
+                toast.success("Successfully Booked");
+            }
+            setTimeout(() => {
+                navigate(-1);
+            }, 2000);
         } catch (error) {
+            toast.error("Booking Failed");
+            setTimeout(() => {
+                navigate("/booking");
+            }, 2000)
             console.log(error);
         }
     };
