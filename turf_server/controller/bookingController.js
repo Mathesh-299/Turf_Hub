@@ -44,7 +44,7 @@ exports.getUserBookingDetails = async (req, res) => {
         if (!userValid) {
             return res.status(404).json({ message: "User Not found" });
         }
-        const booking = await Booking.find({ userId: profileId }).populate("turfId", "name location price timeRange").sort({ createdAt: -1 })
+        const booking = await Booking.find({ userId: profileId }).populate("turfId", "name location price timeRange date").sort({ createdAt: -1 })
         res.status(200).json({ booking, message: "Retrived Successfully" });
     } catch (error) {
         res.status(501).json({ message: "Internal Server Error" });
