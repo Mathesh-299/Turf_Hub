@@ -1,4 +1,4 @@
-import { Star } from "lucide-react";
+import { ArrowLeft, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -122,16 +122,29 @@ const Review = () => {
                         >
                             {loading ? "Submitting..." : "Submit Review"}
                         </button>
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setForm({ Name: "", Rating: 0, Comment: "" });
-                                setError("");
-                            }}
-                            className="text-base text-red-500 hover:underline font-semibold"
-                        >
-                            Clear
-                        </button>
+
+                        <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setForm({ Name: "", Rating: 0, Comment: "" });
+                                    setError("");
+                                }}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-red-300 text-red-600 font-semibold bg-red-50 hover:bg-red-100 hover:shadow transition duration-200 active:scale-95"
+                            >
+                                <Trash2 size={18} className="text-red-500" />
+                                Clear
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => navigate(-1)}
+                                className="flex items-center gap-1 px-3 py-1.5 rounded-full border border-blue-300 text-blue-600 font-semibold bg-blue-50 hover:bg-blue-100 hover:shadow transition duration-200 active:scale-95"
+                            >
+                                <ArrowLeft size={18} className="text-blue-500" />
+                                Go Back
+                            </button>
+
+                        </div>
                     </div>
                 </form>
             </div>
