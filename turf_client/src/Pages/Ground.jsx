@@ -183,7 +183,7 @@ const Ground = () => {
                                     className="bg-white rounded-xl shadow hover:shadow-lg transition-transform duration-200 hover:scale-[1.02]"
                                 >
                                     <img
-                                        src={`http://localhost:8000/${turf.image}`}
+                                        src={`https://turf-hub.onrender.com/${turf.image}`}
                                         alt={turf.name}
                                         className="w-full h-48 object-cover object-center rounded-t-xl"
                                         onError={(e) => {

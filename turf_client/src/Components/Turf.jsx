@@ -86,7 +86,7 @@ const Turf = () => {
                 </button>
 
                 <img
-                    src={turf.image ? `http://localhost:8000/${turf.image}` : "/placeholder.png"}
+                    src={turf.image ? `https://turf-hub.onrender.com/${turf.image}` : "/placeholder.png"}
                     alt={turf.name || "Turf Image"}
                     className="w-full h-72 object-cover border-b"
                     onError={(e) => {
