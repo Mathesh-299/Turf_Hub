@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import Confetti from "react-confetti";
-import { toast } from "react-hot-toast";
 import { FaArrowLeft, FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
+import { toast } from "react-toastify";
 import API from "../api/api";
 
 const ResetPassword = () => {
