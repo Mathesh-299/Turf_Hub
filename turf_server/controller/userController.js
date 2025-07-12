@@ -108,3 +108,35 @@ exports.updateUserDetails = async (req, res) => {
         res.status(501).json({ message: "Internal Error" });
     }
 }
+
+
+exports.userVerification = async (req, res) => {
+    const { email } = req.query;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.status(200).json({ user, message: "User found" });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+exports.resetPassword = async (req, res) => {
+    const { email, newPassword } = req.body;
+    try {
+        if (!email || !newPassword) {
+            return res.status(400).json({ message: "Email and new password are required" })
+        }
+        const user = await User.findOne({ email });
+        const hashpassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashpassword;
+        console.log(hashpassword)
+        await user.save();
+        res.status(200).json({ message: "Password Updated" });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Error" });
+    }
+}
