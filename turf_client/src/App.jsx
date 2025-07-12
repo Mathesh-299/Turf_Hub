@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import Login from "./Auth/Login"
 import Payment from "./Auth/Payment"
 import Register from "./Auth/Register"
+import ResetPassword from "./Auth/ResetPassword"
 import Booking from "./Components/Booking"
 import EditTurf from "./Components/EditTurf"
 import ProfilePage from "./Components/ProfilePage"
@@ -31,6 +32,7 @@ const App = () => {
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/ground" element={<Ground />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ResetPassword />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/booking" element={<Booking />} />
                     <Route path="/queries" element={<Queries />} />

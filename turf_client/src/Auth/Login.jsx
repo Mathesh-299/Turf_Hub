@@ -127,8 +127,12 @@ const Login = () => {
                         {Submit ? "Logging in..." : "Login"}
                     </button>
                 </form>
-
-                <p className="text-center text-sm text-gray-300 mt-6">
+                <div className="flex items-center justify-end pt-2 font-semibold text-white ">
+                    <Link to="/forgot-password" >
+                        <p>Forgot Password?</p>
+                    </Link>
+                </div>
+                <p className="text-center text-sm text-gray-300 mt-3">
                     Don't have an account?{" "}
                     <Link to="/register" className="text-blue-400 hover:underline font-medium">
                         Register here
