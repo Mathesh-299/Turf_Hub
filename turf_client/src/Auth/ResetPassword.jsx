@@ -2,10 +2,12 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import Confetti from "react-confetti";
 import { FaArrowLeft, FaEnvelope, FaEye, FaEyeSlash, FaLock } from "react-icons/fa";
+import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import API from "../api/api";
 
 const ResetPassword = () => {
+    const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [step, setStep] = useState(1);
@@ -52,6 +54,9 @@ const ResetPassword = () => {
                 setStep(1);
                 setEmail("");
                 setNewPassword("");
+                setTimeout(() => {
+                    Navigate("/login");
+                }, 2000);
             }
         } catch (error) {
             console.error(error);
