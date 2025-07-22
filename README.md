@@ -66,8 +66,8 @@ npm install
 
 
 
-# 🚩 Environment Variables
-# Create a .env file inside the backend/ with:
+🚩 Environment Variables
+Create a .env file inside the backend/ with:
 
 
 PORT=5000
