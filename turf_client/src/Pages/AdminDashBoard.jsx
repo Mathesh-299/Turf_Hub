@@ -12,7 +12,6 @@ const AdminDashboard = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem("token");
     const [users, setUsers] = useState([]);
-    // const [query, setQuery] = useState([]);/
 
     const fetchTurfs = async () => {
         try {
