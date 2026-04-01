@@ -1,10 +1,11 @@
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from "react";
-import { FaArrowRight, FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { LuCloudSun, LuMoon, LuSun, LuSunrise } from "react-icons/lu";
-import { useLocation, useNavigate } from "react-router";
+import { ChevronLeft, ChevronRight, Moon, Sunrise, Sun, CloudSun, ArrowRight, CalendarDays, Info, ShieldCheck } from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../api/api";
 import computeTimeRangeAndDuration from "../utils/computeTimeRangeAndDuration";
+import { useTurfContext } from "../context/TurfContext";
 
 function getLocalDateString(date) {
     const year = date.getFullYear();
@@ -26,25 +27,35 @@ function formatSlotTime(h, m) {
 }
 
 const BookingTemplateDark = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const { currentTurf, setTurf: setContextTurf, setBooking: setContextBooking } = useTurfContext();
+
+    // Pull from navigation state, fallback to Global Context
+    const turf = location.state || currentTurf;
+
+    useEffect(() => {
+        // Hydrate the Global Context if navigated directly from Turf.jsx
+        if (location.state && (!currentTurf || currentTurf._id !== location.state._id)) {
+            setContextTurf(location.state);
+        }
+    }, [location.state, currentTurf, setContextTurf]);
+
     const [currentWeekStart, setCurrentWeekStart] = useState(getStartOfWeek(new Date()));
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [timeOfDay, setTimeOfDay] = useState("Evening");
     const [selectedSlots, setSelectedSlots] = useState([]);
     const [bookedSlotStrings, setBookedSlotStrings] = useState([]);
-    const location = useLocation();
-    const turf =  location.state;
-    // console.log(turf)
+
     const turfPricePerHour = turf?.price ?? 0;
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const navigate = useNavigate();
 
     const periods = [
-        { label: "Twilight", icon: LuMoon },
-        { label: "Morning", icon: LuSunrise },
-        { label: "Noon", icon: LuSun },
-        { label: "Evening", icon: LuCloudSun }
+        { label: "Twilight", icon: Moon, gradient: "from-indigo-600 to-purple-600" },
+        { label: "Morning", icon: Sunrise, gradient: "from-orange-400 to-rose-400" },
+        { label: "Noon", icon: Sun, gradient: "from-amber-400 to-orange-500" },
+        { label: "Evening", icon: CloudSun, gradient: "from-blue-500 to-indigo-500" }
     ];
-    console.log(turf)
 
     const getDatesForWeek = () => [...Array(7)].map((_, i) => {
         const d = new Date(currentWeekStart);
@@ -103,6 +114,7 @@ const BookingTemplateDark = () => {
         if (prev >= getStartOfWeek(new Date())) {
             setCurrentWeekStart(prev);
             setSelectedDate(prev);
+            setSelectedSlots([]);
         }
     };
 
@@ -111,11 +123,13 @@ const BookingTemplateDark = () => {
         next.setDate(next.getDate() + 7);
         setCurrentWeekStart(next);
         setSelectedDate(next);
+        setSelectedSlots([]);
     };
 
     const toggleSlot = (slot) => {
         const dateKey = `${getLocalDateString(selectedDate)}_${timeOfDay}_${slot}`;
         if (bookedSlotStrings.includes(dateKey)) return;
+        
         setSelectedSlots(prev =>
             prev.includes(slot)
                 ? prev.filter(s => s !== slot)
@@ -127,7 +141,7 @@ const BookingTemplateDark = () => {
 
     const handleBookSubmit = () => {
         if (!selectedSlots.length) {
-            toast.warn("Choose at least one slot.");
+            toast.warn("Choose at least one time slot to proceed.");
             return;
         }
         const { timeRange, timeDuration } = computeTimeRangeAndDuration(selectedSlots, parseTimeString);
@@ -139,13 +153,13 @@ const BookingTemplateDark = () => {
             timeDuration,
             totalPrice: totalPrice
         };
-        navigate("/paymentDetails", { state: { bookingData: bookingPayload, turf } });
+        setContextBooking(bookingPayload); // Sync payload to Global Context API
+        navigate("/paymentDetails"); // Removed memory state injection
     };
 
     const fetchAvailable = async () => {
         if (!turf?._id || !selectedDate || !timeOfDay) return;
         const dateStr = getLocalDateString(selectedDate);
-        console.log(dateStr)
         const token = localStorage.getItem("token");
         try {
             const response = await API.get(`/booking/getSlots/${turf._id}/${dateStr}/${timeOfDay}`, {
@@ -160,7 +174,6 @@ const BookingTemplateDark = () => {
             setBookedSlotStrings(filteredKeys);
         } catch (error) {
             console.error("Fetch error:", error);
-            toast.error("Failed to fetch available slots.");
         }
     };
 
@@ -169,91 +182,218 @@ const BookingTemplateDark = () => {
     }, [selectedDate, timeOfDay, turf?._id]);
 
     const slots = generateSlots(timeOfDay);
+
+    if (!turf) {
+        return (
+            <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center gap-6">
+                <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center">
+                    <CalendarDays className="w-8 h-8 text-slate-600" />
+                </div>
+                <p className="text-slate-400 text-lg font-medium">Booking context lost.</p>
+                <button 
+                    onClick={() => navigate("/ground")} 
+                    className="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 transition font-bold shadow-[0_0_20px_rgba(37,99,235,0.3)]"
+                >
+                    Return to Arenas
+                </button>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gradient-to-r from-black via-gray-900 to-black text-white flex flex-col items-center pt-24 pb-36 sm:pt-32 gap-6 px-2">
-            <h1 className="text-2xl font-bold text-center">{turf?.name}</h1>
-            <hr className="border-white w-full max-w-2xl" />
-            <section className="flex items-center justify-center gap-2 w-full max-w-3xl overflow-x-auto scrollbar-hide">
-                <button onClick={handlePrevWeek} disabled={currentWeekStart <= getStartOfWeek(new Date())}
-                    className={`p-2 rounded-full ${currentWeekStart <= getStartOfWeek(new Date())
-                        ? "bg-neutral-700 opacity-40 cursor-not-allowed"
-                        : "bg-neutral-800 hover:bg-neutral-700"}`}>
-                    <FaChevronLeft />
-                </button>
-                {getDatesForWeek().map(d => {
-                    const today = new Date(); today.setHours(0, 0, 0, 0);
-                    const past = d < today;
-                    const sel = d.toDateString() === selectedDate.toDateString();
-                    return (
-                        <button
-                            key={d.toISOString()}
-                            disabled={past}
-                            onClick={() => {
-                                if (!past) {
-                                    console.log(d.getMonth());
-                                    setSelectedDate(d);
-                                }
-                            }}
-                            className={`flex flex-col items-center min-w-[3.6rem] px-2 py-2 rounded-lg
-                            ${sel ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}
-                            ${past && "opacity-40 cursor-not-allowed"}`}>
-                            <span>{d.toLocaleDateString("en-US", { weekday: "short" })}</span>
-                            <span className="text-sm">{d.getDate()} {d.toLocaleDateString("en-US", { month: "short" })}</span>
-                        </button>
-                    );
-                })}
-                <button onClick={handleNextWeek}
-                    className="p-2 rounded-full bg-neutral-800 hover:bg-neutral-700">
-                    <FaChevronRight />
-                </button>
-            </section>
-            <hr className="border-white w-full max-w-2xl" />
+        <div className="min-h-screen bg-slate-950 font-sans selection:bg-blue-500/30 overflow-x-hidden relative flex flex-col">
+            {/* Ambient Background Lights */}
+            <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden h-full">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-blue-600/10 blur-[120px]" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-emerald-600/10 blur-[120px]" />
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03]" />
+            </div>
 
-            <section className="flex flex-wrap justify-center gap-2 max-w-3xl">
-                {periods.map(({ label, icon: Icon }) => (
-                    <button key={label} onClick={() => { setTimeOfDay(label); setSelectedSlots([]); }}
-                        className={`flex items-center gap-1 px-4 py-2 rounded-full
-                            ${timeOfDay === label ? "bg-purple-700 font-semibold" : "bg-neutral-800 hover:bg-neutral-700"}`}>
-                        <Icon /> {label}
-                    </button>
-                ))}
-            </section>
-            <hr className="border-white w-full max-w-2xl" />
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.98 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="relative z-10 w-full max-w-4xl mx-auto pt-28 px-4 pb-48 flex-grow"
+            >
+                {/* Header */}
+                <div className="text-center mb-10">
+                    <h1 className="text-3xl md:text-5xl font-black text-white tracking-tight mb-3">
+                        Reserve <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400">{turf.name}</span>
+                    </h1>
+                    <p className="text-slate-400 flex items-center justify-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                        Secure Booking Process
+                    </p>
+                </div>
 
-            <section className="grid gap-2 w-full max-w-lg"
-                style={{ gridTemplateColumns: "repeat(auto-fill,minmax(90px,1fr))" }}>
-                {slots.map(slot => {
-                    const key = `${getLocalDateString(selectedDate)}_${timeOfDay}_${slot}`;
-                    const isBooked = bookedSlotStrings.includes(key);
-                    const isSelected = selectedSlots.includes(slot);
-                    return (
-                        <div key={slot}
-                            onClick={() => toggleSlot(slot)}
-                            title={isBooked ? "Already booked" : ""}
-                            className={`text-center py-2 rounded-full cursor-pointer
-                                ${isBooked
-                                    ? "bg-gray-700 text-black opacity-50 disabled"
-                                    : isSelected
-                                        ? "bg-purple-700 font-semibold"
-                                        : "bg-neutral-800 hover:bg-neutral-700"}`}>
-                            {slot}
+                <div className="space-y-8">
+                    {/* Date Selector */}
+                    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 shadow-2xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                                <CalendarDays className="w-5 h-5 text-blue-500" /> Date Selection
+                            </h2>
+                            <span className="text-sm font-medium text-slate-400 bg-slate-800/50 px-3 py-1 rounded-full border border-white/5">
+                                {selectedDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                            </span>
                         </div>
-                    );
-                })}
-            </section>
+                        
+                        <div className="flex items-center gap-2 md:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+                            <button 
+                                onClick={handlePrevWeek} 
+                                disabled={currentWeekStart <= getStartOfWeek(new Date())}
+                                className={`shrink-0 w-12 h-12 rounded-full flex items-center justify-center transition-all ${currentWeekStart <= getStartOfWeek(new Date()) ? "bg-slate-800/30 text-slate-600 cursor-not-allowed border border-white/5" : "bg-slate-800 text-white hover:bg-slate-700 hover:scale-105 border border-white/10"}`}
+                            >
+                                <ChevronLeft className="w-5 h-5" />
+                            </button>
+                            
+                            <div className="flex flex-1 justify-between gap-2 min-w-[500px]">
+                                {getDatesForWeek().map(d => {
+                                    const today = new Date(); today.setHours(0, 0, 0, 0);
+                                    const past = d < today;
+                                    const sel = d.toDateString() === selectedDate.toDateString();
+                                    return (
+                                        <button
+                                            key={d.toISOString()}
+                                            disabled={past}
+                                            onClick={() => {
+                                                if (!past) {
+                                                    setSelectedDate(d);
+                                                    setSelectedSlots([]);
+                                                }
+                                            }}
+                                            className={`relative flex-1 flex flex-col items-center justify-center py-4 rounded-2xl border transition-all duration-300 overflow-hidden group
+                                                ${sel 
+                                                    ? "bg-blue-600/20 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
+                                                    : past 
+                                                        ? "bg-slate-900/30 border-white/5 opacity-40 cursor-not-allowed" 
+                                                        : "bg-slate-800/50 border-white/10 hover:bg-slate-700/50 hover:border-slate-600"
+                                                }`}
+                                        >
+                                            {sel && <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-emerald-500/20" />}
+                                            <span className={`text-xs uppercase tracking-wider font-semibold mb-1 relative z-10 ${sel ? "text-blue-300" : "text-slate-400"}`}>
+                                                {d.toLocaleDateString("en-US", { weekday: "short" })}
+                                            </span>
+                                            <span className={`text-2xl font-black relative z-10 ${sel ? "text-white" : "text-slate-200"}`}>
+                                                {d.getDate()}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
 
-            {selectedSlots.length > 0 && (
-                <section className="fixed bottom-0 left-0 right-0 bg-purple-600 p-4 flex justify-between gap-10 items-center sm:static sm:rounded-lg sm:max-w-xl">
-                    <div>
-                        <p className="text-lg font-bold">₹ {totalPrice.toLocaleString()}</p>
-                        <p className="text-sm text-yellow-300">{selectedSlots.join(", ")}</p>
+                            <button 
+                                onClick={handleNextWeek}
+                                className="shrink-0 w-12 h-12 rounded-full bg-slate-800 text-white hover:bg-slate-700 hover:scale-105 transition-all flex items-center justify-center border border-white/10"
+                            >
+                                <ChevronRight className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
-                    <button onClick={handleBookSubmit}
-                        className="flex items-center gap-2 text-blue-600 bg-white hover:bg-blue-600 hover:text-white font-bold px-4 py-2 rounded-full">
-                        Next <FaArrowRight />
-                    </button>
-                </section>
-            )}
+
+                    {/* Time Period Selector */}
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                        {periods.map(({ label, icon: Icon, gradient }) => {
+                            const active = timeOfDay === label;
+                            return (
+                                <button 
+                                    key={label} 
+                                    onClick={() => { setTimeOfDay(label); setSelectedSlots([]); }}
+                                    className={`relative p-[1px] rounded-2xl transition-all duration-300 ${active ? "scale-105 z-10" : "hover:scale-102"}`}
+                                >
+                                    {active && (
+                                        <div className={`absolute inset-0 bg-gradient-to-r ${gradient} rounded-2xl blur-md opacity-50`} />
+                                    )}
+                                    <div className={`relative flex items-center justify-center gap-3 w-full h-full py-4 rounded-2xl border transition-colors
+                                        ${active 
+                                            ? `bg-slate-900 border-transparent` 
+                                            : `bg-slate-900/60 backdrop-blur-md border-white/10 hover:bg-slate-800 text-slate-400`
+                                        }`}
+                                    >
+                                        <Icon className={`w-5 h-5 ${active ? "text-white" : ""}`} />
+                                        <span className={`font-semibold ${active ? "text-white" : ""}`}>{label}</span>
+                                    </div>
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    {/* Slots Grid */}
+                    <div className="bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-[2rem] p-6 lg:p-8 shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-30" />
+                        <h3 className="text-white font-bold mb-6 flex items-center gap-2">
+                            <Info className="w-5 h-5 text-indigo-400" /> Select Slots (30 min duration)
+                        </h3>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-4">
+                            {slots.map(slot => {
+                                const key = `${getLocalDateString(selectedDate)}_${timeOfDay}_${slot}`;
+                                const isBooked = bookedSlotStrings.includes(key);
+                                const isSelected = selectedSlots.includes(slot);
+                                
+                                return (
+                                    <button 
+                                        key={slot}
+                                        disabled={isBooked}
+                                        onClick={() => toggleSlot(slot)}
+                                        className={`relative py-3 rounded-xl text-sm font-semibold transition-all overflow-hidden border
+                                            ${isBooked
+                                                ? "bg-slate-900/40 border-slate-800 text-slate-700 cursor-not-allowed"
+                                                : isSelected
+                                                    ? "bg-blue-600 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)] scale-105 z-10"
+                                                    : "bg-slate-800/80 border-white/5 text-slate-300 hover:bg-slate-700 hover:border-slate-500"
+                                            }`}
+                                    >
+                                        {isBooked && (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80">
+                                                <span className="text-[10px] uppercase tracking-wider text-red-500/80 font-bold tracking-widest">Booked</span>
+                                            </div>
+                                        )}
+                                        {slot}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Floating Checkout Bar */}
+            <AnimatePresence>
+                {selectedSlots.length > 0 && (
+                    <motion.div 
+                        initial={{ y: 150, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: 150, opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        className="fixed bottom-0 left-0 right-0 z-50 p-4 pointer-events-none"
+                    >
+                        <div className="max-w-4xl mx-auto bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] pointer-events-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+                            <div className="flex-1 w-full flex items-center gap-6">
+                                <div className="hidden sm:flex w-12 h-12 rounded-full bg-emerald-500/20 border border-emerald-500/30 items-center justify-center">
+                                    <span className="text-emerald-400 font-bold">{selectedSlots.length}</span>
+                                </div>
+                                <div>
+                                    <p className="text-slate-400 text-sm font-medium mb-1">Total Estimated Amount</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <p className="text-3xl font-black text-white">₹ {totalPrice.toLocaleString()}</p>
+                                        <p className="text-sm text-emerald-400 font-medium whitespace-nowrap hidden md:block">
+                                            ({(selectedSlots.length * 30) / 60} hrs)
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                onClick={handleBookSubmit}
+                                className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-emerald-400 hover:from-emerald-400 hover:to-emerald-300 text-slate-950 font-black text-lg px-8 py-4 rounded-xl shadow-[0_0_30px_rgba(16,185,129,0.3)] hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all active:scale-95 flex items-center justify-center gap-2"
+                            >
+                                Checkout <ArrowRight className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

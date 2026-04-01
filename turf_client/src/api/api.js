@@ -16,8 +16,3 @@ API.interceptors.response.use(
 )
 
 export default API;
-
-
-
-
-// https://turf-hub.onrender.com/api

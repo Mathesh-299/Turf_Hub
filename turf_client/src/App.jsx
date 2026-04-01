@@ -18,45 +18,58 @@ import Contact from "./Pages/Contact"
 import Ground from "./Pages/Ground"
 import Home from "./Pages/Home"
 import Navbar from "./Pages/Navbar"
-const App = () => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    const user = JSON.parse(localStorage.getItem("user"));
-    return (
-        <>
-            <ToastContainer position="top-right" autoClose={2000} />
-            <BrowserRouter>
-                <Navbar />
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/about" element={<About />} />
-                    <Route path="/contact" element={<Contact />} />
-                    <Route path="/ground" element={<Ground />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/forgot-password" element={<ResetPassword />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/booking" element={<Booking />} />
-                    <Route path="/queries" element={<Queries />} />
-                    {
-                        isLoggedIn && user && user.role === "admin" && (
-                            <Route path="/adminPage" element={<AdminDashboard />} />
-                        )
-                    }
-                    {
-                        isLoggedIn && (
-                            <>
-                                <Route path="/profilePage" element={<ProfilePage />} />
-                                <Route path="/turfParticular" element={<Turf />} />
-                                <Route path="/edit-turf" element={<EditTurf />} />
-                                <Route path="/paymentDetails" element={<Payment />} />
-                                <Route path="/review" element={<Review />} />
-                                <Route path="/all-reviews" element={<AllReviews />} />
-                            </>
+import { TurfProvider } from "./context/TurfContext"
+import { AuthProvider, useAuthContext } from "./context/AuthContext"
+import { ThemeProvider } from "./context/ThemeContext"
 
-                        )
-                    }
-                </Routes>
-            </BrowserRouter>
-        </>
+const AppRoutes = () => {
+    const { isLoggedIn, user } = useAuthContext();
+    
+    return (
+        <BrowserRouter>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/ground" element={<Ground />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/forgot-password" element={<ResetPassword />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/booking" element={<Booking />} />
+                <Route path="/queries" element={<Queries />} />
+                {
+                    isLoggedIn && user && user.role === "admin" && (
+                        <Route path="/adminPage" element={<AdminDashboard />} />
+                    )
+                }
+                {
+                    isLoggedIn && (
+                        <>
+                            <Route path="/profilePage" element={<ProfilePage />} />
+                            <Route path="/turfParticular" element={<Turf />} />
+                            <Route path="/edit-turf" element={<EditTurf />} />
+                            <Route path="/paymentDetails" element={<Payment />} />
+                            <Route path="/review" element={<Review />} />
+                            <Route path="/all-reviews" element={<AllReviews />} />
+                        </>
+                    )
+                }
+            </Routes>
+        </BrowserRouter>
+    );
+};
+
+const App = () => {
+    return (
+        <ThemeProvider>
+            <AuthProvider>
+                <TurfProvider>
+                    <ToastContainer position="top-right" autoClose={2000} />
+                    <AppRoutes />
+                </TurfProvider>
+            </AuthProvider>
+        </ThemeProvider>
     )
 }
 

@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { ArrowLeft, Star, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
@@ -17,6 +18,12 @@ const Review = () => {
     const token = localStorage.getItem("token");
 
     useEffect(() => {
+        if (!turf) {
+            toast.error("Turf details missing.");
+            navigate("/ground");
+            return;
+        }
+
         const user = JSON.parse(localStorage.getItem("user"));
         if (user) {
             setIds((prev) => ({ ...prev, userId: user.id }));
@@ -61,8 +68,13 @@ const Review = () => {
     };
 
     return (
-        <div className="pt-32 bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen overflow-y-auto">
-            <div className="max-w-lg mx-auto p-8 bg-white rounded-2xl shadow-xl border border-gray-200">
+        <div className="pt-32 bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen overflow-y-auto overflow-x-hidden">
+            <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="max-w-lg mx-auto p-8 bg-white rounded-2xl shadow-xl border border-gray-200"
+            >
                 <h2 className="text-3xl font-bold text-center text-purple-700 mb-6">
                     Share Your Experience
                 </h2>
@@ -147,7 +159,7 @@ const Review = () => {
                         </div>
                     </div>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 };

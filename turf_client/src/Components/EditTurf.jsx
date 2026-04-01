@@ -1,3 +1,4 @@
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -72,9 +73,16 @@ const EditTurf = () => {
 
     const slotOptions = ["Morning", "Afternoon", "Evening", "Night"];
 
+    if (!turfData) return null;
+
     return (
         <div className="min-h-screen pt-24 px-4 pb-16 bg-gradient-to-br from-green-100 to-white">
-            <div className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+                className="max-w-xl mx-auto bg-white p-8 rounded-xl shadow-lg"
+            >
                 <div className="flex flex-row justify-between">
                     <h2 className="text-2xl font-bold text-green-700 mb-6">Edit Turf</h2>
                     <FaTimes onClick={() => navigate('/turfParticular', { state: turfData._id })}
@@ -149,7 +157,7 @@ const EditTurf = () => {
                         Update Turf
                     </button>
                 </form>
-            </div>
+            </motion.div>
         </div>
     );
 };

@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/* Force Tailwind v4 to look at the .dark class for the dark: prefix */
+@custom-variant dark (&:is(.dark, .dark *));
+
+@layer base {
+  *, ::before, ::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.4, 1);
+    transition-duration: 150ms;
+  }
+}
 
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
