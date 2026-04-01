@@ -34,7 +34,8 @@ const bookingSchema = new mongoose.Schema({
     },
     paymentMethod: {
         type: String,
-        enum: ["UPI", "Credit / Debit Card", "Cash on Arrival"],
+        // Broadened enum to match the enhanced UI
+        enum: ["UPI", "Credit / Debit Card", "Cash on Arrival", "CARD", "NETBANKING", "CASH"],
         required: false
     },
     paymentOption: {

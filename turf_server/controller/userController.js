@@ -128,15 +128,17 @@ exports.resetPassword = async (req, res) => {
     const { email, newPassword } = req.body;
     try {
         if (!email || !newPassword) {
-            return res.status(400).json({ message: "Email and new password are required" })
+            return res.status(400).json({ message: "Email and new password are required" });
         }
         const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "We couldn't find an account with that email." });
+        }
         const hashpassword = await bcrypt.hash(newPassword, 10);
         user.password = hashpassword;
-        console.log(hashpassword)
         await user.save();
-        res.status(200).json({ message: "Password Updated" });
+        res.status(200).json({ message: "Password updated securely" });
     } catch (error) {
-        res.status(500).json({ message: "Internal Error" });
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }

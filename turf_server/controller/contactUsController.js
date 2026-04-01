@@ -32,12 +32,25 @@ exports.getQuery = async (req, res) => {
 exports.deleteQuery = async (req, res) => {
     const id = req.params.id;
     try {
-        const detetedId = await ContactUs.findByIdAndDelete(id);
-        if (!detetedId) {
-            res.status(404).json({ message: "Id not found" });
+        const deletedQuery = await ContactUs.findByIdAndDelete(id);
+        if (!deletedQuery) {
+            return res.status(404).json({ message: "Id not found" });
         }
         res.status(200).json({ message: "Deleted Successfully" });
     } catch (error) {
         res.status(501).json({ message: "Internal Server Error" });
+    }
+}
+
+exports.updateQueryStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        if (!status) return res.status(400).json({ message: "Status is required" });
+        const updatedQuery = await ContactUs.findByIdAndUpdate(id, { status }, { new: true });
+        if (!updatedQuery) return res.status(404).json({ message: "Query not found" });
+        res.status(200).json({ updatedQuery, message: "Status updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Internal Server Error" });
     }
 }

@@ -1,10 +1,10 @@
 const Turf = require("../models/turfSchema")
 const User = require("../models/userSchema");
 exports.addGround = async (req, res) => {
-    const { name, location, price } = req.body;
+    const { name, location, price, contactNumber } = req.body;
     const id = req.params.id;
     const slots = Array.isArray(req.body.slots) ? req.body.slots : [req.body.slots];
-    const image = req.file ? req.file.path : "";
+    const image = req.file ? req.file.path.replace(/\\/g, '/') : "";
 
     try {
         const turfName = await Turf.findOne({ name, location });
@@ -12,7 +12,7 @@ exports.addGround = async (req, res) => {
             return res.status(400).json({ message: "Turf already exists at this location" });
         }
 
-        const turf = new Turf({ name, location, price, slots, image, ownerId: id });
+        const turf = new Turf({ name, location, price, slots, image, contactNumber, ownerId: id });
         await turf.save();
         res.status(201).json({ turf, message: "Turf Successfully added" });
     } catch (error) {
@@ -50,9 +50,9 @@ exports.deleteGround = async (req, res) => {
 exports.updateGround = async (req, res) => {
     try {
         const id = req.params.id;
-        const { name, location, price } = req.body;
+        const { name, location, price, contactNumber } = req.body;
         const slots = Array.isArray(req.body.slots) ? req.body.slots : [req.body.slots];
-        const image = req.file ? req.file.path : undefined;
+        const image = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
 
         const turf = await Turf.findById(id);
         if (!turf) {
@@ -62,6 +62,7 @@ exports.updateGround = async (req, res) => {
         turf.name = name || turf.name;
         turf.location = location || turf.location;
         turf.price = price || turf.price;
+        if (contactNumber !== undefined) turf.contactNumber = contactNumber;
         turf.slots = slots.length ? slots : turf.slots;
         if (image) turf.image = image;
 
