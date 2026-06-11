@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5678/api";
+export const API_BASE_URL = "https://turfhub.onrender.com/api";
 export const IMAGE_BASE_URL = API_BASE_URL.replace(/\/api$/, "");
 
 const API = axios.create({
