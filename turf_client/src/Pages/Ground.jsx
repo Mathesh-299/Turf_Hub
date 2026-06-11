@@ -396,7 +396,15 @@ const Ground = () => {
                                             {edit ? <Edit2 className="w-6 h-6 text-blue-600"/> : <Plus className="w-6 h-6 text-emerald-500"/>}
                                             {edit ? "Edit Arena" : "Add Arena"}
                                         </h2>
-                                        <button onClick={closeForm} className="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                                        <button 
+                                            type="button" 
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                closeForm();
+                                            }} 
+                                            className="p-3 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors z-[110] relative cursor-pointer"
+                                        >
                                             <X className="w-6 h-6" />
                                         </button>
                                     </div>
@@ -567,10 +575,17 @@ const Ground = () => {
                                                 </div>
                                             </div>
                                             
-                                            <div className="pt-4">
+                                            <div className="pt-4 flex gap-4">
+                                                <button
+                                                    type="button"
+                                                    onClick={closeForm}
+                                                    className="w-1/3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-black py-5 rounded-2xl transition-all active:scale-95 uppercase tracking-[0.2em] text-sm cursor-pointer"
+                                                >
+                                                    Cancel
+                                                </button>
                                                 <button
                                                     type="submit"
-                                                    className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 uppercase tracking-[0.2em] text-sm"
+                                                    className="w-2/3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-5 rounded-2xl shadow-xl transition-all active:scale-95 uppercase tracking-[0.2em] text-sm"
                                                 >
                                                     {edit ? "Save Changes" : "Deploy Arena"}
                                                 </button>
