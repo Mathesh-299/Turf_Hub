@@ -383,7 +383,7 @@ const Ground = () => {
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
-                                className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-xl flex items-center justify-center z-[100] p-4 font-sans"
+                                className="fixed inset-0 bg-white/60 dark:bg-black/60 backdrop-blur-xl flex items-center justify-center z-[999] p-4 font-sans"
                             >
                                 <motion.div 
                                     initial={{ scale: 0.95, opacity: 0, y: 30 }}
