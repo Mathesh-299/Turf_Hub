@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL = "https://turfhub.onrender.com/api";
+export const API_BASE_URL = "https://turf-hub.onrender.com/";
 export const IMAGE_BASE_URL = API_BASE_URL.replace(/\/api$/, "");
 
 const API = axios.create({
