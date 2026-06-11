@@ -23,6 +23,16 @@ import { toast } from "react-toastify";
 import API from "../api/api";
 import { useTurfContext } from "../context/TurfContext";
 
+const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
+
 const Payment = () => {
     const navigate = useNavigate();
     const { bookingData, currentTurf: turf, clearBooking } = useTurfContext();
@@ -51,7 +61,7 @@ const Payment = () => {
         setIds({ turfId: turf?._id || "", userId: userValue?.id || "" });
     }, [bookingData, turf, navigate]);
 
-    const handleConfirmPayment = async () => {
+    const handleConfirmPayment = async (methodOverride) => {
         if (!ids.turfId || !ids.userId) {
             toast.error("Critical identity error. Please re-login.");
             return;
@@ -59,28 +69,113 @@ const Payment = () => {
 
         setIsProcessing(true);
         const token = localStorage.getItem("token");
+        const activeMethod = methodOverride || selectedMethod;
 
-        const paymentPayload = {
-            ...bookingData,
-            Amount: price,
-            paymentMethod: selectedMethod,
-            paymentOption: paymentDetails.upi || paymentDetails.bank || "Direct",
-            status: "Booked"
-        };
+        // Direct booking for CASH / Arena Pay
+        if (activeMethod === "CASH") {
+            const paymentPayload = {
+                ...bookingData,
+                Amount: price,
+                paymentMethod: "CASH",
+                paymentOption: "Cash on Arrival",
+                status: "Booked"
+            };
 
+            try {
+                const response = await API.post(`/booking/bookTurf/${ids.turfId}/${ids.userId}`, paymentPayload, {
+                    headers: { Authorization: `Bearer ${token}` }
+                });
+
+                if (response.status === 200 || response.status === 201) {
+                    toast.success("Elite! Your arena booking has been successfully secured.");
+                    clearBooking();
+                    setTimeout(() => navigate("/profilePage"), 1500);
+                }
+            } catch (error) {
+                toast.error(error.response?.data?.message || "Transaction failed. Please try again.");
+                setIsProcessing(false);
+            }
+            return;
+        }
+
+        // Online payment with Razorpay
         try {
-            await new Promise(resolve => setTimeout(resolve, 2000)); // Simulating bank gateway
-            const response = await API.post(`/booking/bookTurf/${ids.turfId}/${ids.userId}`, paymentPayload, {
+            const scriptLoaded = await loadRazorpayScript();
+            if (!scriptLoaded) {
+                toast.error("Razorpay SDK failed to load. Are you offline?");
+                setIsProcessing(false);
+                return;
+            }
+
+            // 1. Create order on the backend
+            const orderResponse = await API.post('/payment/createOrder', {
+                amount: price,
+                turfId: ids.turfId,
+                date: bookingData.date,
+                timeRange: bookingData.timeRange
+            }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
 
-            if (response.status === 200 || response.status === 201) {
-                toast.success("Elite! Your arena has been successfully secured.");
-                clearBooking();
-                setTimeout(() => navigate("/profilePage"), 1500);
-            }
+            const order = orderResponse.data;
+
+            // 2. Open Razorpay checkout Modal
+            const options = {
+                key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_MatheshTurfHub",
+                amount: order.amount,
+                currency: order.currency,
+                name: "Turf Hub",
+                description: `Book Arena: ${turf?.name || "Premium Ground"}`,
+                order_id: order.id,
+                handler: async function (response) {
+                    try {
+                        setIsProcessing(true);
+                        // 3. Verify signature on the backend
+                        const verificationResponse = await API.post('/payment/verifyPayment', {
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature,
+                            bookingDetails: {
+                                ...bookingData,
+                                Amount: price,
+                                paymentMethod: activeMethod,
+                                paymentOption: paymentDetails.upi || paymentDetails.bank || activeMethod,
+                            }
+                        }, {
+                            headers: { Authorization: `Bearer ${token}` }
+                        });
+
+                        if (verificationResponse.status === 200 || verificationResponse.status === 201) {
+                            toast.success("Elite! Your booking has been secured and payment verified.");
+                            clearBooking();
+                            navigate("/profilePage");
+                        }
+                    } catch (err) {
+                        toast.error(err.response?.data?.message || "Payment verification failed. Contact support.");
+                    } finally {
+                        setIsProcessing(false);
+                    }
+                },
+                prefill: {
+                    name: JSON.parse(localStorage.getItem("user") || "{}").name || "",
+                    email: JSON.parse(localStorage.getItem("user") || "{}").email || "",
+                    contact: JSON.parse(localStorage.getItem("user") || "{}").phone || ""
+                },
+                theme: {
+                    color: "#2563EB"
+                },
+                modal: {
+                    ondismiss: function() {
+                        setIsProcessing(false);
+                    }
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.open();
         } catch (error) {
-            toast.error(error.response?.data?.message || "Transaction failed. Please try again.");
+            console.error("Payment initialization failed:", error);
+            toast.error(error.response?.data?.message || "Failed to initiate payment. Please try again.");
             setIsProcessing(false);
         }
     };
@@ -194,7 +289,7 @@ const Payment = () => {
                                                 whileTap={{ scale: 0.98 }}
                                                 onClick={() => {
                                                     setSelectedMethod(method.id);
-                                                    if (method.id === "CASH") handleConfirmPayment();
+                                                    if (method.id === "CASH") handleConfirmPayment("CASH");
                                                     else setStep(2);
                                                 }}
                                                 className="group relative flex flex-col items-start p-10 bg-white dark:bg-slate-900/40 backdrop-blur-3xl rounded-[3.5rem] border border-slate-200 dark:border-white/5 hover:border-blue-600/50 dark:hover:border-blue-500 shadow-xl transition-all duration-500 text-left overflow-hidden"

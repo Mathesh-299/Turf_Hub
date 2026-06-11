@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Edit2, Search, Trash2, MapPin, Tag, Clock, Users, DollarSign, Activity, Map, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import API from "../api/api";
+import API, { IMAGE_BASE_URL } from "../api/api";
 import AdminSidebar from './Adminsidebar';
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -169,7 +169,7 @@ const AdminDashboard = () => {
                                         >
                                             <div className="relative aspect-[4/3] overflow-hidden bg-slate-100 dark:bg-slate-900">
                                                 <img
-                                                    src={turf.image ? `https://turf-hub.onrender.com/${turf.image.replace(/\\/g, '/')}` : "/placeholder.png"}
+                                                    src={turf.image ? `${IMAGE_BASE_URL}/${turf.image.replace(/\\/g, '/')}` : "/placeholder.png"}
                                                     alt={turf.name}
                                                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
                                                 />

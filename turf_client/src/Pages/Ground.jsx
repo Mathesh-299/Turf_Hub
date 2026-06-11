@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import API from "../api/api";
+import API, { IMAGE_BASE_URL } from "../api/api";
 import AdminSidebar from "./Adminsidebar";
 
 const districts = [
@@ -100,13 +100,18 @@ const Ground = () => {
         try {
             const form = createFormData();
             await API.post(`/ground/addGround/${id}`, form, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
+                },
             });
             fetchData();
             toast.success("Turf added successfully");
             closeForm();
         } catch (error) {
-            toast.error("Failed to add turf");
+            console.error("Add turf error:", error);
+            const errMsg = error.response?.data?.message || error.response?.data?.error || "Failed to add turf";
+            toast.error(errMsg);
         }
     };
 
@@ -114,13 +119,18 @@ const Ground = () => {
         try {
             const form = createFormData();
             await API.put(`/ground/updateGround/${turfId}`, form, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "multipart/form-data"
+                },
             });
             fetchData();
             toast.success("Turf updated successfully");
             closeForm();
         } catch (error) {
-            toast.error("Failed to update turf");
+            console.error("Update turf error:", error);
+            const errMsg = error.response?.data?.message || error.response?.data?.error || "Failed to update turf";
+            toast.error(errMsg);
         }
     };
 
@@ -252,7 +262,7 @@ const Ground = () => {
 
                                     <div className="p-3 relative overflow-hidden">
                                         <img
-                                            src={turf.image ? `https://turf-hub.onrender.com/${turf.image.replace(/\\/g, '/')}` : "/placeholder.png"}
+                                            src={turf.image ? `${IMAGE_BASE_URL}/${turf.image.replace(/\\/g, '/')}` : "/placeholder.png"}
                                             alt={turf.name}
                                             className="w-full h-56 object-cover object-center rounded-[24px] group-hover:scale-105 transition-transform duration-700 ease-out z-0"
                                             onError={(e) => { e.target.src = "/placeholder.png"; }}

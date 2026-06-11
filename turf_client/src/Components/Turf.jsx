@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import API from "../api/api";
+import API, { IMAGE_BASE_URL } from "../api/api";
 import TurfContactCard from "../Pages/TurfCard";
 
 import { useTurfContext } from "../context/TurfContext";
@@ -137,7 +137,7 @@ const Turf = () => {
                 {/* Visual Header Banner */}
                 <div className="relative w-full h-80 md:h-[450px] rounded-[2rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group border border-white/5">
                     <img
-                        src={turf.image ? `https://turf-hub.onrender.com/${turf.image.replace(/\\/g, '/')}` : FALLBACK_IMAGE}
+                        src={turf.image ? `${IMAGE_BASE_URL}/${turf.image.replace(/\\/g, '/')}` : FALLBACK_IMAGE}
                         alt={turf.name || "Turf"}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
                         onError={(e) => {
