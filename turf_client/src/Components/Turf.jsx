@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import {
     ArrowLeft,
+    ArrowRight,
     CheckCircle2,
     Clock,
     Edit2,
@@ -42,6 +43,7 @@ const Turf = () => {
 
     const [turf, setTurf] = useState(null);
     const [ownerName, setOwnerName] = useState('');
+    const [activeImgIndex, setActiveImgIndex] = useState(0);
     const user = JSON.parse(localStorage.getItem("user"));
     const [reviews, setReviews] = useState({
         totalReviews: 0,
@@ -136,20 +138,64 @@ const Turf = () => {
             >
                 {/* Visual Header Banner */}
                 <div className="relative w-full h-80 md:h-[450px] rounded-[2rem] overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] group border border-white/5">
-                    <img
-                        src={turf.image ? `${IMAGE_BASE_URL}/${turf.image.replace(/\\/g, '/')}` : FALLBACK_IMAGE}
-                        alt={turf.name || "Turf"}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = FALLBACK_IMAGE;
-                        }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                    {(() => {
+                        const imagesList = turf.images && turf.images.length > 0 
+                            ? turf.images 
+                            : (turf.image ? [turf.image] : []);
+                        const activeImage = imagesList[activeImgIndex] || FALLBACK_IMAGE;
+                        const imageSrc = activeImage.startsWith("http") ? activeImage : `${IMAGE_BASE_URL}/${activeImage.replace(/\\/g, '/')}`;
+
+                        return (
+                            <>
+                                <img
+                                    src={imageSrc}
+                                    alt={turf.name || "Turf"}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000 ease-out"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = FALLBACK_IMAGE;
+                                    }}
+                                />
+                                {imagesList.length > 1 && (
+                                    <>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveImgIndex((prev) => (prev === 0 ? imagesList.length - 1 : prev - 1));
+                                            }}
+                                            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-slate-900 border border-white/10 text-white p-3 rounded-full flex items-center justify-center backdrop-blur-md shadow-lg transition-all"
+                                        >
+                                            <ArrowLeft className="w-5 h-5" />
+                                        </button>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setActiveImgIndex((prev) => (prev === imagesList.length - 1 ? 0 : prev + 1));
+                                            }}
+                                            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-slate-900 border border-white/10 text-white p-3 rounded-full flex items-center justify-center backdrop-blur-md shadow-lg transition-all"
+                                        >
+                                            <ArrowRight className="w-5 h-5" />
+                                        </button>
+                                        {/* Dot Indicators */}
+                                        <div className="absolute bottom-24 left-1/2 -translate-x-1/2 flex gap-1.5 z-20">
+                                            {imagesList.map((_, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => setActiveImgIndex(idx)}
+                                                    className={`h-2 rounded-full transition-all duration-300 ${idx === activeImgIndex ? 'w-6 bg-blue-500' : 'w-2 bg-white/40 hover:bg-white/60'}`}
+                                                />
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+                            </>
+                        );
+                    })()}
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent z-10" />
                     
                     <button
                         onClick={() => navigate('/ground')}
-                        className="absolute top-6 left-6 bg-slate-900/60 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white p-3 rounded-full flex items-center gap-2 shadow-lg transition-all"
+                        className="absolute top-6 left-6 bg-slate-900/60 hover:bg-slate-900 backdrop-blur-md border border-white/10 text-white p-3 rounded-full flex items-center gap-2 shadow-lg transition-all z-20"
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>

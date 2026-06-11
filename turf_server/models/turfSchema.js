@@ -34,6 +34,10 @@ const turfSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    images: {
+        type: [String],
+        default: [],
+    },
     createdAt: {
         type: Date,
         default: Date.now,

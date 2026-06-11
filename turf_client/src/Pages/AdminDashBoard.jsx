@@ -38,7 +38,7 @@ const AdminDashboard = () => {
     };
 
     const handleEdit = (turf) => {
-        navigate("/editTurf", { state: turf });
+        navigate("/edit-turf", { state: turf });
     };
 
     const handleDelete = async (id) => {

@@ -20,7 +20,7 @@ router.post(
     "/addGround/:id",
     authenticateJWT,
     adminAccess,
-    upload.single("image"),
+    upload.array("images", 10),
     addGround
 );
 
@@ -28,7 +28,7 @@ router.put(
     "/updateGround/:id",
     authenticateJWT,
     adminAccess,
-    upload.single("image"),
+    upload.array("images", 10),
     updateGround
 );
 
@@ -36,5 +36,5 @@ router.delete("/deleteGround/:id", authenticateJWT, adminAccess, deleteGround);
 router.get("/getGround", getGround);
 router.get("/getGroundId/:id", getGroundId);
 router.get("/getOwnerId/:id", getOwnerName)
-router.put("/editTurf/:id",authenticateJWT,ownerAccess,editTurf);
+router.put("/editTurf/:id",authenticateJWT,adminAccess,editTurf);
 module.exports = router;

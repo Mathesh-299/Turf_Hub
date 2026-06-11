@@ -10,15 +10,20 @@ app.use(cors());
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-const port = process.env.PORT;
-DB().then(() => {
-    app.listen(port, () => {
-        console.log(`Server running at ${port}`);
-    });
-});
+app.get("/", (req, res) => {
+    res.send("Turf Hub Server");
+})
 
 app.use("/api/users", require("./routes/user"));
 app.use("/api/ground", require("./routes/ground"));
 app.use("/api/contactUs", require("./routes/contactUs"));
 app.use("/api/booking", require("./routes/booking"));
 app.use("/api/reviews", require("./routes/review"));
+app.use("/api/payment", require("./routes/payment"));
+
+const port = process.env.PORT;
+DB().then(() => {
+    app.listen(port, () => {
+        console.log(`Server running at ${port}`);
+    });
+});

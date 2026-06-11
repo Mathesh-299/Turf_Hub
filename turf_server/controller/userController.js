@@ -21,6 +21,7 @@ exports.register = async (req, res) => {
         await user.save();
         res.status(201).json({ message: "User created" });
     } catch (error) {
+        console.error("Register error:", error);
         res.status(500).json({ message: "Server error" });
     }
 }
@@ -54,6 +55,7 @@ exports.login = async (req, res) => {
         });
     }
     catch (e) {
+        console.error("Login error:", e);
         res.status(501).json({ message: "Server error" });
     }
 }

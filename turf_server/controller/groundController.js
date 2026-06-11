@@ -1,10 +1,19 @@
 const Turf = require("../models/turfSchema")
 const User = require("../models/userSchema");
+const path = require("path");
+
 exports.addGround = async (req, res) => {
     const { name, location, price, contactNumber } = req.body;
     const id = req.params.id;
     const slots = Array.isArray(req.body.slots) ? req.body.slots : [req.body.slots];
-    const image = req.file ? req.file.path.replace(/\\/g, '/') : "";
+    
+    // Auth Check: Only matching user or admin can create turf
+    if (req.user.role !== 'admin' && id !== req.user.userId) {
+        return res.status(403).json({ message: "Access denied: Unauthorized operation" });
+    }
+
+    const images = req.files ? req.files.map(file => "uploads/" + path.basename(file.path)) : [];
+    const image = images.length ? images[0] : "";
 
     try {
         const turfName = await Turf.findOne({ name, location });
@@ -12,10 +21,11 @@ exports.addGround = async (req, res) => {
             return res.status(400).json({ message: "Turf already exists at this location" });
         }
 
-        const turf = new Turf({ name, location, price, slots, image, contactNumber, ownerId: id });
+        const turf = new Turf({ name, location, price, slots, image, images, contactNumber, ownerId: id });
         await turf.save();
         res.status(201).json({ turf, message: "Turf Successfully added" });
     } catch (error) {
+        console.error("addGround error:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
@@ -39,9 +49,16 @@ exports.deleteGround = async (req, res) => {
         if (!validId) {
             return res.status(404).json({ message: "Turf not found" });
         }
+
+        // Owner check: Only owner of this turf or admin can delete it
+        if (req.user.role !== 'admin' && validId.ownerId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied: You do not own this turf" });
+        }
+
         await Turf.findByIdAndDelete(id);
         res.status(200).json({ message: "Deleted Successfully" });
     } catch (error) {
+        console.error("deleteGround error:", error);
         res.status(505).json({ message: "Internal Error" });
     }
 }
@@ -52,11 +69,16 @@ exports.updateGround = async (req, res) => {
         const id = req.params.id;
         const { name, location, price, contactNumber } = req.body;
         const slots = Array.isArray(req.body.slots) ? req.body.slots : [req.body.slots];
-        const image = req.file ? req.file.path.replace(/\\/g, '/') : undefined;
+        const images = req.files ? req.files.map(file => "uploads/" + path.basename(file.path)) : undefined;
 
         const turf = await Turf.findById(id);
         if (!turf) {
             return res.status(404).json({ message: "Turf not found" });
+        }
+
+        // Owner check: Only owner of this turf or admin can update it
+        if (req.user.role !== 'admin' && turf.ownerId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied: You do not own this turf" });
         }
 
         turf.name = name || turf.name;
@@ -64,11 +86,15 @@ exports.updateGround = async (req, res) => {
         turf.price = price || turf.price;
         if (contactNumber !== undefined) turf.contactNumber = contactNumber;
         turf.slots = slots.length ? slots : turf.slots;
-        if (image) turf.image = image;
+        if (images && images.length) {
+            turf.images = images;
+            turf.image = images[0];
+        }
 
         await turf.save();
         res.status(200).json({ message: "Updated Successfully", turf });
     } catch (err) {
+        console.error("updateGround error:", err);
         res.status(500).json({ message: "Error updating turf", error: err.message });
     }
 };
@@ -112,6 +138,11 @@ exports.editTurf = async (req, res) => {
         const turf = await Turf.findById(id);
         if (!turf) {
             return res.status(404).json({ message: "Turf not found" });
+        }
+
+        // Owner check: Only the owner who created this turf or admin can edit it
+        if (req.user.role !== 'admin' && turf.ownerId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: "Access denied: You do not own this turf" });
         }
 
         turf.name = name || turf.name;

@@ -11,7 +11,9 @@ import {
     Image as ImageIcon,
     Activity,
     Phone,
-    Map
+    Map,
+    ChevronLeft,
+    ChevronRight
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -41,9 +43,30 @@ const Ground = () => {
         location: "",
         price: "",
         slots: [],
-        image: null,
+        images: [],
         contactNumber: "",
     });
+
+    const [cardActiveIndices, setCardActiveIndices] = useState({});
+    const [previewIndex, setPreviewIndex] = useState(0);
+
+    const handlePrevCardImage = (e, turfId, imagesCount) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setCardActiveIndices(prev => ({
+            ...prev,
+            [turfId]: (prev[turfId] === 0 || !prev[turfId]) ? imagesCount - 1 : prev[turfId] - 1
+        }));
+    };
+
+    const handleNextCardImage = (e, turfId, imagesCount) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setCardActiveIndices(prev => ({
+            ...prev,
+            [turfId]: ((prev[turfId] || 0) === imagesCount - 1) ? 0 : (prev[turfId] || 0) + 1
+        }));
+    };
 
     const fetchData = async () => {
         setIsLoading(true);
@@ -66,13 +89,14 @@ const Ground = () => {
         : turfs.filter(turf => turf.location === selectedDistrict);
 
     const openForm = (turf = null) => {
+        setPreviewIndex(0);
         if (turf) {
             setEdit(true);
-            setFormData({ ...turf, image: null, contactNumber: turf.contactNumber || "" });
+            setFormData({ ...turf, images: [], contactNumber: turf.contactNumber || "" });
             setTurfId(turf._id);
         } else {
             setEdit(false);
-            setFormData({ name: "", location: "", price: "", slots: [], image: null, contactNumber: "" });
+            setFormData({ name: "", location: "", price: "", slots: [], images: [], contactNumber: "" });
             setTurfId(null);
         }
         setShowForm(true);
@@ -80,7 +104,8 @@ const Ground = () => {
 
     const closeForm = () => {
         setShowForm(false);
-        setFormData({ name: "", location: "", price: "", slots: [], image: null, contactNumber: "" });
+        setPreviewIndex(0);
+        setFormData({ name: "", location: "", price: "", slots: [], images: [], contactNumber: "" });
     };
 
     const createFormData = () => {
@@ -90,8 +115,10 @@ const Ground = () => {
         form.append("price", formData.price);
         form.append("contactNumber", formData.contactNumber);
         formData.slots.forEach(slot => form.append("slots", slot));
-        if (formData.image) {
-            form.append("image", formData.image);
+        if (formData.images && formData.images.length > 0) {
+            formData.images.forEach(img => {
+                form.append("images", img);
+            });
         }
         return form;
     };
@@ -260,14 +287,45 @@ const Ground = () => {
                                         </div>
                                     )}
 
-                                    <div className="p-3 relative overflow-hidden">
-                                        <img
-                                            src={turf.image ? `${IMAGE_BASE_URL}/${turf.image.replace(/\\/g, '/')}` : "/placeholder.png"}
-                                            alt={turf.name}
-                                            className="w-full h-56 object-cover object-center rounded-[24px] group-hover:scale-105 transition-transform duration-700 ease-out z-0"
-                                            onError={(e) => { e.target.src = "/placeholder.png"; }}
-                                        />
-                                        <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full text-xs font-black text-blue-600 dark:text-blue-400 shadow-xl border border-blue-500/10">
+                                    <div className="p-3 relative overflow-hidden group/image">
+                                        {(() => {
+                                            const imagesList = turf.images && turf.images.length > 0 
+                                                ? turf.images 
+                                                : (turf.image ? [turf.image] : []);
+                                            const activeIdx = cardActiveIndices[turf._id] || 0;
+                                            const activeImg = imagesList[activeIdx] || "/placeholder.png";
+                                            const imgUrl = activeImg.startsWith("uploads") ? `${IMAGE_BASE_URL}/${activeImg.replace(/\\/g, '/')}` : activeImg;
+
+                                            return (
+                                                <>
+                                                    <img
+                                                        src={imgUrl}
+                                                        alt={turf.name}
+                                                        className="w-full h-56 object-cover object-center rounded-[24px] group-hover:scale-105 transition-transform duration-700 ease-out z-0"
+                                                        onError={(e) => { e.target.src = "/placeholder.png"; }}
+                                                    />
+                                                    {imagesList.length > 1 && (
+                                                        <>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handlePrevCardImage(e, turf._id, imagesList.length)}
+                                                                className="absolute left-6 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-slate-900 text-white p-2 rounded-full backdrop-blur-md shadow-lg transition-all opacity-0 group-hover/image:opacity-100"
+                                                            >
+                                                                <ChevronLeft className="w-4 h-4" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={(e) => handleNextCardImage(e, turf._id, imagesList.length)}
+                                                                className="absolute right-6 top-1/2 -translate-y-1/2 z-20 bg-slate-900/60 hover:bg-slate-900 text-white p-2 rounded-full backdrop-blur-md shadow-lg transition-all opacity-0 group-hover/image:opacity-100"
+                                                            >
+                                                                <ChevronRight className="w-4 h-4" />
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                        <div className="absolute top-6 left-6 px-4 py-1.5 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-full text-xs font-black text-blue-600 dark:text-blue-400 shadow-xl border border-blue-500/10 z-10">
                                             {turf.location.toUpperCase()}
                                         </div>
                                     </div>
@@ -404,15 +462,49 @@ const Ground = () => {
                                             </div>
 
                                             <div>
-                                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest">Cover Image</label>
+                                                <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 mb-2 uppercase tracking-widest">Turf Images</label>
                                                 <div className="relative group">
                                                     <input
                                                         type="file"
                                                         accept="image/*"
-                                                        onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                                                        multiple
+                                                        onChange={(e) => {
+                                                            setFormData({ ...formData, images: Array.from(e.target.files) });
+                                                            setPreviewIndex(0);
+                                                        }}
                                                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-400 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 px-3 py-3 rounded-2xl transition-all cursor-pointer font-bold"
                                                     />
                                                 </div>
+                                                {formData.images && formData.images.length > 0 && (
+                                                    <div className="mt-4 relative w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900">
+                                                        <img
+                                                            src={URL.createObjectURL(formData.images[previewIndex])}
+                                                            alt="preview"
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg text-white text-[10px] font-black">
+                                                            {previewIndex + 1} / {formData.images.length}
+                                                        </div>
+                                                        {formData.images.length > 1 && (
+                                                            <>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setPreviewIndex(prev => prev === 0 ? formData.images.length - 1 : prev - 1)}
+                                                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                                                                >
+                                                                    <ChevronLeft className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setPreviewIndex(prev => prev === formData.images.length - 1 ? 0 : prev + 1)}
+                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
+                                                                >
+                                                                    <ChevronRight className="w-4 h-4" />
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div>
