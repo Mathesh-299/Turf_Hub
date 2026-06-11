@@ -469,40 +469,70 @@ const Ground = () => {
                                                         accept="image/*"
                                                         multiple
                                                         onChange={(e) => {
-                                                            setFormData({ ...formData, images: Array.from(e.target.files) });
-                                                            setPreviewIndex(0);
+                                                            const selectedFiles = Array.from(e.target.files);
+                                                            setFormData(prev => ({
+                                                                ...prev,
+                                                                images: [...prev.images, ...selectedFiles]
+                                                            }));
                                                         }}
                                                         className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-400 file:mr-4 file:py-2.5 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white hover:file:bg-blue-700 px-3 py-3 rounded-2xl transition-all cursor-pointer font-bold"
                                                     />
                                                 </div>
                                                 {formData.images && formData.images.length > 0 && (
-                                                    <div className="mt-4 relative w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900">
-                                                        <img
-                                                            src={URL.createObjectURL(formData.images[previewIndex])}
-                                                            alt="preview"
-                                                            className="w-full h-full object-cover"
-                                                        />
-                                                        <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg text-white text-[10px] font-black">
-                                                            {previewIndex + 1} / {formData.images.length}
+                                                    <div className="mt-4 space-y-4">
+                                                        {/* Thumbnail list with delete action */}
+                                                        <div className="flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-2xl border border-slate-200 dark:border-slate-800">
+                                                            {formData.images.map((file, idx) => (
+                                                                <div key={idx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shrink-0 group">
+                                                                    <img
+                                                                        src={URL.createObjectURL(file)}
+                                                                        alt={`thumb-${idx}`}
+                                                                        className="w-full h-full object-cover"
+                                                                    />
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            const updated = formData.images.filter((_, i) => i !== idx);
+                                                                            setFormData({ ...formData, images: updated });
+                                                                            setPreviewIndex(0);
+                                                                        }}
+                                                                        className="absolute inset-0 bg-red-600/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-xl"
+                                                                    >
+                                                                        <X className="w-5 h-5" />
+                                                                    </button>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                        {formData.images.length > 1 && (
-                                                            <>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setPreviewIndex(prev => prev === 0 ? formData.images.length - 1 : prev - 1)}
-                                                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                                                                >
-                                                                    <ChevronLeft className="w-4 h-4" />
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setPreviewIndex(prev => prev === formData.images.length - 1 ? 0 : prev + 1)}
-                                                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors"
-                                                                >
-                                                                    <ChevronRight className="w-4 h-4" />
-                                                                </button>
-                                                            </>
-                                                        )}
+
+                                                        {/* Large image preview slideshow */}
+                                                        <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900">
+                                                            <img
+                                                                src={URL.createObjectURL(formData.images[previewIndex])}
+                                                                alt="preview"
+                                                                className="w-full h-full object-cover"
+                                                            />
+                                                            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-lg text-white text-[10px] font-black z-10">
+                                                                {previewIndex + 1} / {formData.images.length}
+                                                            </div>
+                                                            {formData.images.length > 1 && (
+                                                                <>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setPreviewIndex(prev => prev === 0 ? formData.images.length - 1 : prev - 1)}
+                                                                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10"
+                                                                    >
+                                                                        <ChevronLeft className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setPreviewIndex(prev => prev === formData.images.length - 1 ? 0 : prev + 1)}
+                                                                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors z-10"
+                                                                    >
+                                                                        <ChevronRight className="w-4 h-4" />
+                                                                    </button>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 )}
                                             </div>
