@@ -11,7 +11,7 @@ app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.get("/", (req, res) => {
-    res.send("Turf Hub Server");
+    res.send("Turf Hub Server running");
 })
 
 app.use("/api/users", require("./routes/user"));
