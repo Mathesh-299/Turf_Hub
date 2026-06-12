@@ -47,6 +47,7 @@ const Payment = () => {
     const [paymentDetails, setPaymentDetails] = useState({
         card: { number: "", name: "", expiry: "", cvc: "" },
         upi: null,
+        upiVpa: "",
         bank: null
     });
 
@@ -119,6 +120,31 @@ const Payment = () => {
 
             const order = orderResponse.data;
 
+            // Construct prefill options dynamically based on selection
+            const prefillOptions = {
+                name: paymentDetails.card?.name || JSON.parse(localStorage.getItem("user") || "{}").name || "",
+                email: JSON.parse(localStorage.getItem("user") || "{}").email || "",
+                contact: JSON.parse(localStorage.getItem("user") || "{}").phone || ""
+            };
+
+            if (activeMethod === "CARD") {
+                prefillOptions.method = "card";
+            } else if (activeMethod === "UPI") {
+                prefillOptions.method = "upi";
+                if (paymentDetails.upiVpa) {
+                    prefillOptions.vpa = paymentDetails.upiVpa;
+                }
+            } else if (activeMethod === "NETBANKING") {
+                prefillOptions.method = "netbanking";
+                if (paymentDetails.bank) {
+                    if (paymentDetails.bank.includes("HDFC")) prefillOptions.bank = "HDFC";
+                    else if (paymentDetails.bank.includes("SBI")) prefillOptions.bank = "SBIN";
+                    else if (paymentDetails.bank.includes("ICICI")) prefillOptions.bank = "ICIC";
+                    else if (paymentDetails.bank.includes("Axis")) prefillOptions.bank = "UTIB";
+                    else if (paymentDetails.bank.includes("Kotak")) prefillOptions.bank = "KKBK";
+                }
+            }
+
             // 2. Open Razorpay checkout Modal
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_MatheshTurfHub",
@@ -139,7 +165,7 @@ const Payment = () => {
                                 ...bookingData,
                                 Amount: price,
                                 paymentMethod: activeMethod,
-                                paymentOption: paymentDetails.upi || paymentDetails.bank || activeMethod,
+                                paymentOption: paymentDetails.upiVpa || paymentDetails.upi || paymentDetails.bank || activeMethod,
                             }
                         }, {
                             headers: { Authorization: `Bearer ${token}` }
@@ -156,22 +182,24 @@ const Payment = () => {
                         setIsProcessing(false);
                     }
                 },
-                prefill: {
-                    name: JSON.parse(localStorage.getItem("user") || "{}").name || "",
-                    email: JSON.parse(localStorage.getItem("user") || "{}").email || "",
-                    contact: JSON.parse(localStorage.getItem("user") || "{}").phone || ""
-                },
+                prefill: prefillOptions,
                 theme: {
                     color: "#2563EB"
                 },
                 modal: {
                     ondismiss: function() {
                         setIsProcessing(false);
+                        toast.warn("Payment checkout cancelled.");
                     }
                 }
             };
 
             const rzp = new window.Razorpay(options);
+            rzp.on("payment.failed", function (response) {
+                console.error("Razorpay payment failed:", response.error);
+                toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+                setIsProcessing(false);
+            });
             rzp.open();
         } catch (error) {
             console.error("Payment initialization failed:", error);
@@ -419,6 +447,17 @@ const Payment = () => {
                                                     </button>
                                                 ))}
                                             </div>
+
+                                            <div className="space-y-3">
+                                                <label className="text-[11px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.2em] pl-1">Or enter UPI ID / VPA</label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="e.g. test@razorpay or username@okaxis" 
+                                                    className="w-full bg-slate-50 dark:bg-slate-950/50 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white p-6 rounded-3xl font-black text-sm tracking-widest outline-none focus:border-blue-600 transition-all placeholder:text-slate-300 dark:placeholder:text-slate-700"
+                                                    value={paymentDetails.upiVpa || ""}
+                                                    onChange={(e) => setPaymentDetails({ ...paymentDetails, upiVpa: e.target.value })}
+                                                />
+                                            </div>
                                             
                                             <div className="flex items-center gap-6 bg-slate-50 dark:bg-white/5 p-8 rounded-3xl border-2 border-dashed border-slate-200 dark:border-white/10 group">
                                                 <div className="p-4 bg-white dark:bg-slate-900 rounded-2xl shadow-xl group-hover:scale-110 transition-transform duration-500">
@@ -463,7 +502,7 @@ const Payment = () => {
                                     <div className="mt-16">
                                         <button
                                             onClick={handleConfirmPayment}
-                                            disabled={isProcessing || (selectedMethod === "CARD" && !paymentDetails.card.number) || (selectedMethod === "UPI" && !paymentDetails.upi) || (selectedMethod === "NETBANKING" && !paymentDetails.bank)}
+                                            disabled={isProcessing || (selectedMethod === "CARD" && !paymentDetails.card.number) || (selectedMethod === "UPI" && !paymentDetails.upi && !paymentDetails.upiVpa) || (selectedMethod === "NETBANKING" && !paymentDetails.bank)}
                                             className="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-7 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-5 group disabled:opacity-30 disabled:grayscale uppercase tracking-[0.3em] text-sm hover:translate-y-[-4px]"
                                         >
                                             {isProcessing ? (
